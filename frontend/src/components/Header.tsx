@@ -166,102 +166,116 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden mt-4 pb-4 border-t border-gray-200">
-            <div className="flex flex-col space-y-4 pt-4">
-              {location.pathname === '/' ? (
-                <button
-                  onClick={() => scrollToSection('home')}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Home size={20} />
-                  <span>Home</span>
-                </button>
-              ) : (
-                <Link
-                  to="/"
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Home size={20} />
-                  <span>Home</span>
-                </Link>
-              )}
-              {location.pathname === '/' ? (
-                <button
-                  onClick={() => scrollToSection('products')}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Package size={20} />
-                  <span>Products</span>
-                </button>
-              ) : (
-                <Link
-                  to="/"
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Package size={20} />
-                  <span>Products</span>
-                </Link>
-              )}
-              {location.pathname === '/' ? (
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Phone size={20} />
-                  <span>Contact</span>
-                </button>
-              ) : (
-                <Link
-                  to="/"
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <Phone size={20} />
-                  <span>Contact</span>
-                </Link>
-              )}
-              {user && (
-                <Link
-                  to="/my-orders"
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-                >
-                  <ShoppingBag size={20} />
-                  <span>My Orders</span>
-                </Link>
-              )}
-              {/* User Info or Login Button for Mobile */}
-              {loading ? (
-                <span className="text-gray-500 text-sm">Loading...</span>
-              ) : user ? (
-                <div className="flex items-center space-x-2">
-                  {user.picture && (
-                    <img src={user.picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
-                  )}
-                  <span className="text-gray-700 font-semibold mr-2">{user.name || user.email}</span>
-                  {user.isAdmin && (
-                    <Link to="/admin">
-                      <Button variant="outline" className="flex items-center mr-2">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Admin Panel
-                      </Button>
-                    </Link>
-                  )}
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 relative z-50 bg-white">
+              <div className="flex flex-col space-y-4 pt-4">
+                {location.pathname === '/' ? (
                   <button
-                    onClick={handleLogout}
-                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
+                    onClick={() => scrollToSection('home')}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
-                    Logout
+                    <Home size={20} />
+                    <span>Home</span>
                   </button>
-                </div>
-              ) : (
-                <a
-                  href="/api/auth/google"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300 text-center"
-                >
-                  Login with Google
-                </a>
-              )}
-            </div>
-          </nav>
+                ) : (
+                  <Link
+                    to="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <Home size={20} />
+                    <span>Home</span>
+                  </Link>
+                )}
+                {location.pathname === '/' ? (
+                  <button
+                    onClick={() => scrollToSection('products')}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <Package size={20} />
+                    <span>Products</span>
+                  </button>
+                ) : (
+                  <Link
+                    to="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <Package size={20} />
+                    <span>Products</span>
+                  </Link>
+                )}
+                {location.pathname === '/' ? (
+                  <button
+                    onClick={() => scrollToSection('contact')}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <Phone size={20} />
+                    <span>Contact</span>
+                  </button>
+                ) : (
+                  <Link
+                    to="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <Phone size={20} />
+                    <span>Contact</span>
+                  </Link>
+                )}
+                {user && (
+                  <Link
+                    to="/my-orders"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                  >
+                    <ShoppingBag size={20} />
+                    <span>My Orders</span>
+                  </Link>
+                )}
+                {/* User Info or Login Button for Mobile */}
+                {loading ? (
+                  <span className="text-gray-500 text-sm">Loading...</span>
+                ) : user ? (
+                  <div className="flex items-center space-x-2">
+                    {user.picture && (
+                      <img src={user.picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
+                    )}
+                    <span className="text-gray-700 font-semibold mr-2">{user.name || user.email}</span>
+                    {user.isAdmin && (
+                      <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="flex items-center mr-2">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <a
+                    href="/api/auth/google"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
+                  >
+                    Login with Google
+                  </a>
+                )}
+              </div>
+            </nav>
+          </>
         )}
       </div>
     </header>

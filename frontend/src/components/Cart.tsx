@@ -43,7 +43,10 @@ const Cart = () => {
     }
     setPlacingOrder(true);
     try {
-      await api.post('/orders', { address });
+      await api.post('/orders', { 
+        address,
+        items: cartItems
+      });
       toast({ title: 'Order placed!', description: 'Your order has been placed successfully.' });
       clearCart();
       setIsOpen(false);
@@ -81,20 +84,22 @@ const Cart = () => {
 
   return (
     <>
-      {/* Cart Button */}
-      <div className="fixed top-20 right-4 z-40">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="relative bg-orange-500 hover:bg-orange-600 text-white rounded-full p-3 shadow-lg"
-        >
-          <ShoppingCart size={24} />
-          {getTotalItems() > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-              {getTotalItems()}
-            </span>
-          )}
-        </Button>
-      </div>
+      {/* Cart Button - Only show when sidebar is closed */}
+      {!isOpen && (
+        <div className="fixed top-20 right-4 z-[9999]">
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="relative bg-orange-500 hover:bg-orange-600 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <ShoppingCart size={24} />
+            {getTotalItems() > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                {getTotalItems()}
+              </span>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Cart Sidebar */}
       {isOpen && (

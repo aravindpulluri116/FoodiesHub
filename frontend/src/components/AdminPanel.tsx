@@ -138,7 +138,7 @@ const AdminPanel = () => {
               <ul className="space-y-2">
                 {order.items.map((item, index) => (
                   <li key={index} className="text-sm">
-                    {item.product.name} x {item.quantity} - ₹{item.product.price * item.quantity}
+                    {item.product?.name || 'Product not available'} x {item.quantity} - ₹{((item.product?.price || 0) * item.quantity).toFixed(2)}
                   </li>
                 ))}
               </ul>

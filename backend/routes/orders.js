@@ -16,16 +16,16 @@ const isAuthenticated = (req, res, next) => {
 router.post('/', isAuthenticated, async (req, res) => {
   try {
     console.log('Creating order for user:', req.user._id);
-    const user = await User.findById(req.user._id).populate('cart.productId');
+    const user = await User.findById(req.user._id);
     
     if (!user) {
       console.log('User not found');
       return res.status(404).json({ message: 'User not found' });
     }
-    
-    if (user.cart.length === 0) {
-      console.log('Cart is empty');
-      return res.status(400).json({ message: 'Cart is empty' });
+
+    if (!req.body.items || req.body.items.length === 0) {
+      console.log('No items provided');
+      return res.status(400).json({ message: 'No items provided' });
     }
 
     if (!req.body.address) {
@@ -33,15 +33,15 @@ router.post('/', isAuthenticated, async (req, res) => {
       return res.status(400).json({ message: 'Address is required' });
     }
 
-    console.log('User cart:', user.cart);
-    const totalAmount = user.cart.reduce((total, item) => {
+    console.log('Order items:', req.body.items);
+    const totalAmount = req.body.items.reduce((total, item) => {
       return total + (item.productId.price * item.quantity);
     }, 0);
 
     console.log('Creating order with total amount:', totalAmount);
     const order = new Order({
       user: req.user._id,
-      items: user.cart.map(item => ({
+      items: req.body.items.map(item => ({
         product: item.productId._id,
         quantity: item.quantity
       })),
@@ -51,11 +51,6 @@ router.post('/', isAuthenticated, async (req, res) => {
 
     await order.save();
     console.log('Order saved successfully:', order);
-    
-    // Clear the user's cart after order is created
-    user.cart = [];
-    await user.save();
-    console.log('User cart cleared');
 
     res.status(201).json(order);
   } catch (error) {

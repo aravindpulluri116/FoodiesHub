@@ -17,6 +17,27 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
 
+  // Save scroll position before refresh
+  useEffect(() => {
+    const scrollPosition = window.scrollY;
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('scrollPosition', scrollPosition.toString());
+    });
+
+    // Restore scroll position after refresh
+    const savedPosition = sessionStorage.getItem('scrollPosition');
+    if (savedPosition) {
+      window.scrollTo(0, parseInt(savedPosition));
+      sessionStorage.removeItem('scrollPosition');
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPosition', scrollPosition.toString());
+      });
+    };
+  }, []);
+
   const categories = [
     { id: 'all', name: 'All Items' },
     { id: 'specials', name: 'Specials' },

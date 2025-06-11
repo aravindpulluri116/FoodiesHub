@@ -143,10 +143,10 @@ const MyOrders = () => {
                     {order.items.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
                         <span>
-                          {item.product.name} x {item.quantity}
+                          {item.product?.name || 'Product not available'} x {item.quantity}
                         </span>
                         <span className="font-medium">
-                          ₹{(item.product.price * item.quantity).toFixed(2)}
+                          ₹{((item.product?.price || 0) * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     ))}
