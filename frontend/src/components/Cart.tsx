@@ -3,10 +3,22 @@ import { ShoppingCart, X, Plus, Minus, Heart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import axios from 'axios';
+import { toast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api',
+  withCredentials: true
+});
 
 const Cart = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'cart' | 'wishlist'>('cart');
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [address, setAddress] = useState('');
+  const [placingOrder, setPlacingOrder] = useState(false);
   const { 
     cartItems, 
     wishlistItems, 
@@ -20,27 +32,51 @@ const Cart = () => {
     formatPrice 
   } = useCart();
 
-  const handleWhatsAppOrder = () => {
-    if (cartItems.length === 0) return;
+  const handleOpenAddressModal = () => {
+    setAddressModalOpen(true);
+  };
 
+  const handlePlaceOrder = async () => {
+    if (!address) {
+      toast({ title: 'Address required', description: 'Please enter your address.', variant: 'destructive' });
+      return;
+    }
+    setPlacingOrder(true);
+    try {
+      await api.post('/orders', { address });
+      toast({ title: 'Order placed!', description: 'Your order has been placed successfully.' });
+      clearCart();
+      setIsOpen(false);
+      setAddressModalOpen(false);
+      setAddress('');
+    } catch (error) {
+      console.error('Order creation error:', error);
+      toast({ title: 'Error', description: 'Failed to create order. Please try again.', variant: 'destructive' });
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
+
+  const handleWhatsAppOrder = async () => {
+    if (cartItems.length === 0) return;
+    if (!address) {
+      toast({ title: 'Address required', description: 'Please enter your address.', variant: 'destructive' });
+      return;
+    }
     let message = "Hi, I'd like to order the following items from Sneha's Pickles:\n\n";
-    
     cartItems.forEach(item => {
       message += `• ${item.productId.name} - Quantity: ${item.quantity} - ${formatPrice(item.productId.price)} each\n`;
     });
-    
-    message += `\nTotal Amount: ₹${getTotalPrice().toFixed(2)}\n\nPlease confirm my order. Thank you!`;
-    
-    // Use the specified phone number for WhatsApp
-    const phoneNumber = "917981833625"; // +91 7981833625
+    message += `\nTotal Amount: ₹${getTotalPrice().toFixed(2)}\n`;
+    message += `\nDelivery Address: ${address}\n`;
+    message += `\nPlease confirm my order. Thank you!`;
+    const phoneNumber = "917981833625";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    console.log("WhatsApp URL:", whatsappUrl);
-    console.log("Message:", message);
-    
     window.open(whatsappUrl, '_blank');
     clearCart();
     setIsOpen(false);
+    setAddressModalOpen(false);
+    setAddress('');
   };
 
   return (
@@ -197,17 +233,13 @@ const Cart = () => {
                 )}
               </div>
 
-              {/* Footer */}
+              {/* Place Order and WhatsApp Buttons */}
               {activeTab === 'cart' && cartItems.length > 0 && (
-                <div className="border-t p-4 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold">Total:</span>
-                    <span className="text-xl font-bold text-orange-600">₹{getTotalPrice().toFixed(2)}</span>
-                  </div>
-                  <Button
-                    onClick={handleWhatsAppOrder}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  >
+                <div className="p-4 border-t flex flex-col gap-2">
+                  <Button className="bg-orange-600 hover:bg-orange-700 w-full" onClick={handleOpenAddressModal}>
+                    Place Order
+                  </Button>
+                  <Button className="bg-green-600 hover:bg-green-700 w-full" onClick={handleOpenAddressModal}>
                     Order via WhatsApp
                   </Button>
                 </div>
@@ -216,6 +248,29 @@ const Cart = () => {
           </div>
         </div>
       )}
+
+      {/* Address Modal */}
+      <Dialog open={addressModalOpen} onOpenChange={setAddressModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Delivery Address</DialogTitle>
+          </DialogHeader>
+          <textarea
+            className="w-full border rounded p-2 min-h-[80px]"
+            placeholder="Enter your address here..."
+            value={address}
+            onChange={e => setAddress(e.target.value)}
+          />
+          <DialogFooter className="flex flex-col gap-2 mt-4">
+            <Button className="bg-orange-600 hover:bg-orange-700 w-full" onClick={handlePlaceOrder} disabled={placingOrder}>
+              {placingOrder ? 'Placing Order...' : 'Place Order'}
+            </Button>
+            <Button className="bg-green-600 hover:bg-green-700 w-full" onClick={handleWhatsAppOrder}>
+              Order via WhatsApp
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -28,11 +28,13 @@ passport.use(
         let user = await User.findOne({ googleId: profile.id });
 
         if (!user) {
+          const isAdmin = profile.id === '104927229165142059847';
           user = await User.create({
             googleId: profile.id,
             email: profile.emails[0].value,
             name: profile.displayName,
             picture: profile.photos[0].value,
+            isAdmin: isAdmin
           });
         }
 

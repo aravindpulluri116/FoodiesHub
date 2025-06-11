@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 
+// Create axios instance with base URL
+const api = axios.create({
+  baseURL: 'http://localhost:5000',
+  withCredentials: true
+});
+
 interface Product {
   _id: string;
   name: string;
@@ -42,7 +48,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await axios.get('/api/cart', { withCredentials: true });
+        const response = await api.get('/api/cart');
         // Add safety check for cart data
         const validCartItems = response.data.filter((item: any) => 
           item && item.productId && item.productId._id && item.quantity
@@ -69,10 +75,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      await axios.post('/api/cart/add', {
+      await api.post('/api/cart/add', {
         productId: product._id,
         quantity: 1
-      }, { withCredentials: true });
+      });
 
       setCartItems(prev => {
         const existingItem = prev.find(item => item.productId?._id === product._id);
@@ -114,7 +120,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromCart = async (productId: string) => {
     try {
-      await axios.delete(`/api/cart/remove/${productId}`, { withCredentials: true });
+      await api.delete(`/api/cart/remove/${productId}`);
       setCartItems(prev => prev.filter(item => item.productId._id !== productId));
     } catch (error: any) {
       console.error('Error removing from cart:', error);
@@ -140,9 +146,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     try {
-      await axios.put(`/api/cart/update/${productId}`, {
+      await api.put(`/api/cart/update/${productId}`, {
         quantity
-      }, { withCredentials: true });
+      });
       setCartItems(prev =>
         prev.map(item =>
           item.productId._id === productId ? { ...item, quantity } : item
@@ -214,7 +220,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = async () => {
     try {
-      await axios.delete('/api/cart/clear', { withCredentials: true });
+      await api.delete('/api/cart/clear');
       setCartItems([]);
     } catch (error: any) {
       console.error('Error clearing cart:', error);

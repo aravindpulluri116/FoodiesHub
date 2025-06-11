@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Package, Phone } from 'lucide-react';
+import { Home, Package, Phone, Settings, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
+import { Button } from './ui/button';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -51,27 +54,66 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <button
-              onClick={() => scrollToSection('home')}
-              className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
-            >
-              <Home size={20} />
-              <span>Home</span>
-            </button>
-            <button
-              onClick={() => scrollToSection('products')}
-              className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
-            >
-              <Package size={20} />
-              <span>Products</span>
-            </button>
-            <button
-              onClick={() => scrollToSection('contact')}
-              className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
-            >
-              <Phone size={20} />
-              <span>Contact</span>
-            </button>
+            {location.pathname === '/' ? (
+              <button
+                onClick={() => scrollToSection('home')}
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Home size={20} />
+                <span>Home</span>
+              </button>
+            ) : (
+              <Link
+                to="/"
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Home size={20} />
+                <span>Home</span>
+              </Link>
+            )}
+            {location.pathname === '/' ? (
+              <button
+                onClick={() => scrollToSection('products')}
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Package size={20} />
+                <span>Products</span>
+              </button>
+            ) : (
+              <Link
+                to="/"
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Package size={20} />
+                <span>Products</span>
+              </Link>
+            )}
+            {location.pathname === '/' ? (
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Phone size={20} />
+                <span>Contact</span>
+              </button>
+            ) : (
+              <Link
+                to="/"
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <Phone size={20} />
+                <span>Contact</span>
+              </Link>
+            )}
+            {user && (
+              <Link
+                to="/my-orders"
+                className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-300"
+              >
+                <ShoppingBag size={20} />
+                <span>My Orders</span>
+              </Link>
+            )}
           </nav>
 
           {/* User Info or Login Button */}
@@ -84,6 +126,14 @@ const Header = () => {
                   <img src={user.picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
                 )}
                 <span className="text-gray-700 font-semibold mr-2">{user.name || user.email}</span>
+                {user.isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" className="flex items-center mr-2">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Admin Panel
+                    </Button>
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
@@ -118,27 +168,66 @@ const Header = () => {
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 border-t border-gray-200">
             <div className="flex flex-col space-y-4 pt-4">
-              <button
-                onClick={() => scrollToSection('home')}
-                className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-              >
-                <Home size={20} />
-                <span>Home</span>
-              </button>
-              <button
-                onClick={() => scrollToSection('products')}
-                className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-              >
-                <Package size={20} />
-                <span>Products</span>
-              </button>
-              <button
-                onClick={() => scrollToSection('contact')}
-                className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
-              >
-                <Phone size={20} />
-                <span>Contact</span>
-              </button>
+              {location.pathname === '/' ? (
+                <button
+                  onClick={() => scrollToSection('home')}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Home size={20} />
+                  <span>Home</span>
+                </button>
+              ) : (
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Home size={20} />
+                  <span>Home</span>
+                </Link>
+              )}
+              {location.pathname === '/' ? (
+                <button
+                  onClick={() => scrollToSection('products')}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Package size={20} />
+                  <span>Products</span>
+                </button>
+              ) : (
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Package size={20} />
+                  <span>Products</span>
+                </Link>
+              )}
+              {location.pathname === '/' ? (
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Phone size={20} />
+                  <span>Contact</span>
+                </button>
+              ) : (
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <Phone size={20} />
+                  <span>Contact</span>
+                </Link>
+              )}
+              {user && (
+                <Link
+                  to="/my-orders"
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                >
+                  <ShoppingBag size={20} />
+                  <span>My Orders</span>
+                </Link>
+              )}
               {/* User Info or Login Button for Mobile */}
               {loading ? (
                 <span className="text-gray-500 text-sm">Loading...</span>
@@ -148,6 +237,14 @@ const Header = () => {
                     <img src={user.picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
                   )}
                   <span className="text-gray-700 font-semibold mr-2">{user.name || user.email}</span>
+                  {user.isAdmin && (
+                    <Link to="/admin">
+                      <Button variant="outline" className="flex items-center mr-2">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </Button>
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
