@@ -8,7 +8,7 @@ interface Product {
   _id: string;
   name: string;
   description: string;
-  price: string;
+  price: number;
   image: string;
   category: string;
 }
@@ -32,7 +32,11 @@ const Products = () => {
     queryFn: async () => {
       const response = await axios.get('/api/products');
       return response.data;
-    }
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const filteredProducts = selectedCategory === 'all' 
@@ -171,7 +175,7 @@ const Products = () => {
 
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-orange-600">
-                    ₹{typeof product.price === 'string' ? product.price.replace('₹', '') : product.price}
+                    ₹{product.price}
                   </span>
                   <button
                     onClick={() => handleAddToCart(product)}

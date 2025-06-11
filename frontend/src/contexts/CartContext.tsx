@@ -12,7 +12,7 @@ interface Product {
   _id: string;
   name: string;
   description: string;
-  price: number | string;
+  price: number;
   image: string;
   category: string;
 }
@@ -34,7 +34,7 @@ interface CartContextType {
   getTotalItems: () => number;
   getTotalPrice: () => number;
   clearCart: () => void;
-  formatPrice: (price: number | string) => string;
+  formatPrice: (price: number) => string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -204,17 +204,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
       if (!item?.productId?.price) return total;
-      const price = typeof item.productId.price === 'string' 
-        ? parseFloat(item.productId.price.replace('₹', ''))
-        : item.productId.price;
-      return total + (price * item.quantity);
+      return total + (item.productId.price * item.quantity);
     }, 0);
   };
 
-  const formatPrice = (price: number | string) => {
-    if (typeof price === 'string') {
-      return price.startsWith('₹') ? price : `₹${price}`;
-    }
+  const formatPrice = (price: number) => {
     return `₹${price}`;
   };
 

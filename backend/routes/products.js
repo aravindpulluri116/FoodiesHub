@@ -5,6 +5,9 @@ const Product = require('../models/Product');
 // Get all products
 router.get('/', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     const products = await Product.find();
     res.json(products);
   } catch (error) {
