@@ -70,10 +70,10 @@ const Cart = () => {
     cartItems.forEach(item => {
       message += `• ${item.productId.name} - Quantity: ${item.quantity} - ${formatPrice(item.productId.price)} each\n`;
     });
-    message += `\nTotal Amount: ₹${getTotalPrice().toFixed(2)}\n`;
+    message += `\nTotal Amount: *₹${getTotalPrice().toFixed(2)}*\n`;
     message += `\nDelivery Address: ${address}\n`;
     message += `\nPlease confirm my order. Thank you!`;
-    const phoneNumber = "917981833625";
+    const phoneNumber = "918886113839";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     clearCart();

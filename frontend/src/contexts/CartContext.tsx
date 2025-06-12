@@ -60,7 +60,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    const fetchWishlist = async () => {
+      try {
+        const response = await api.get('/api/wishlist');
+        setWishlistItems(response.data);
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+        setWishlistItems([]); // Reset wishlist on error
+      }
+    };
+
     fetchCart();
+    fetchWishlist();
   }, []);
 
   const addToCart = async (product: Product) => {
@@ -172,25 +183,58 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addToWishlist = (product: Product) => {
-    setWishlistItems(prev => {
-      if (prev.find(item => item._id === product._id)) {
-        return prev;
-      }
+  const addToWishlist = async (product: Product) => {
+    try {
+      const response = await api.post('/api/wishlist/add', {
+        productId: product._id
+      });
+      setWishlistItems(response.data);
       toast({
         title: "Added to Wishlist",
         description: `${product.name} added to wishlist`,
       });
-      return [...prev, product];
-    });
+    } catch (error: any) {
+      console.error('Error adding to wishlist:', error);
+      if (error.response?.status === 401) {
+        toast({
+          title: "Login Required",
+          description: "Please login to add items to your wishlist",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add item to wishlist",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
-  const removeFromWishlist = (productId: string) => {
-    setWishlistItems(prev => prev.filter(item => item._id !== productId));
-    toast({
-      title: "Removed from Wishlist",
-      description: "Product removed from wishlist",
-    });
+  const removeFromWishlist = async (productId: string) => {
+    try {
+      const response = await api.delete(`/api/wishlist/remove/${productId}`);
+      setWishlistItems(response.data);
+      toast({
+        title: "Removed from Wishlist",
+        description: "Product removed from wishlist",
+      });
+    } catch (error: any) {
+      console.error('Error removing from wishlist:', error);
+      if (error.response?.status === 401) {
+        toast({
+          title: "Login Required",
+          description: "Please login to manage your wishlist",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to remove item from wishlist",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const isInWishlist = (productId: string) => {

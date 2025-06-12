@@ -5,12 +5,12 @@ import { Phone } from 'lucide-react';
 const Contact = () => {
   const handleWhatsAppClick = () => {
     const message = "Hi, I'd like to know more about Sneha's Pickles!";
-    const whatsappUrl = `https://wa.me/+919876543210?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/+918886113939?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
   const handlePhoneClick = () => {
-    window.location.href = 'tel:+919876543210';
+    window.location.href = 'tel:++918886113839';
   };
 
   return (
@@ -48,7 +48,7 @@ const Contact = () => {
             >
               Chat on WhatsApp
             </button>
-            <p className="text-sm text-gray-500 mt-3">+91 98765 43210</p>
+            <p className="text-sm text-gray-500 mt-3">+91 88861 13939</p>
           </div>
 
           {/* Phone Card */}
@@ -66,7 +66,7 @@ const Contact = () => {
             >
               Call Now
             </button>
-            <p className="text-sm text-gray-500 mt-3">+91 98765 43210</p>
+            <p className="text-sm text-gray-500 mt-3">+91 88861 13939</p>
           </div>
         </div>
 
@@ -74,14 +74,14 @@ const Contact = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 text-center border border-gray-100">
           <h3 className="text-2xl font-bold text-gray-800 mb-4">Our Location</h3>
           <p className="text-gray-600 mb-4">
-            123 Spice Garden Lane, Traditional Foods District<br />
-            Mumbai, Maharashtra 400001, India
+            Yamnampet<br />
+            Ghatkesar, Hyderabad 501301, India
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            We offer delivery across Mumbai and surrounding areas
+            We offer delivery across India
           </p>
           <a
-            href="https://maps.google.com/?q=Mumbai,Maharashtra,India"
+            href="https://maps.google.com/?q=Ghatkesar,Hyderabad,India"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
