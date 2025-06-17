@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Payment from './Payment';
 import {
   Dialog,
   DialogContent,
@@ -161,13 +162,32 @@ const MyOrders = () => {
                 </div>
 
                 {order.status === 'pending' && (
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleCancelClick(order._id)}
-                    >
-                      Cancel Order
-                    </Button>
+                  <div className="mt-4">
+                    <Payment 
+                      amount={order.totalAmount}
+                      orderId={order._id}
+                      onSuccess={() => {
+                        toast({ 
+                          title: 'Success', 
+                          description: 'Payment initiated successfully.' 
+                        });
+                      }}
+                      onError={(error) => {
+                        toast({ 
+                          title: 'Error', 
+                          description: 'Failed to initiate payment. Please try again.',
+                          variant: 'destructive'
+                        });
+                      }}
+                    />
+                    <div className="flex justify-end mt-4">
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleCancelClick(order._id)}
+                      >
+                        Cancel Order
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
