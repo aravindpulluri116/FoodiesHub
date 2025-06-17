@@ -42,15 +42,15 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xl">S</span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Sneha's Pickles</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Pickles Hub</h1>
               <p className="text-sm text-gray-600">Homemade with Love</p>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">

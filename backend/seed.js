@@ -12,37 +12,37 @@ const products = [
   },
   {
     name: "Mixed Vegetable Pickle",
-    description: "A delightful mix of seasonal vegetables pickled with our special spice blend.",
+    description: "A delightful mix of seasonal vegetables pickled with our special spice blend. Made with fresh, crunchy vegetables like cauliflower, raw mango, carrot, and more, seasoned with traditional spices.",
     price: 200,
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=800&q=80",
+    image: "/mixed veg pickle.png",
     category: "pickles"
   },
   {
     name: "Lime Pickle",
     description: "Zesty lime pickle that adds a burst of flavor to any meal. Made with fresh limes and traditional spices.",
     price: 180,
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
+    image: "https://chefsmandala.com/wp-content/uploads/2018/04/Indian-Lemon-Pickle.jpg",
     category: "pickles"
   },
   {
     name: "Chicken Biryani",
     description: "Aromatic basmati rice layered with tender chicken pieces and traditional spices.",
     price: 350,
-    image: "https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=800&q=80",
+    image: "https://www.licious.in/blog/wp-content/uploads/2022/06/chicken-hyderabadi-biryani-01-750x750.jpg",
     category: "biryanis"
   },
   {
     name: "Mutton Biryani",
     description: "Rich and flavorful mutton biryani with perfectly cooked rice and succulent meat.",
     price: 450,
-    image: "https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=800&q=80",
+    image: "https://crunchymunchie.in/wp-content/uploads/2024/05/biryani03.jpg",
     category: "biryanis"
   },
   {
     name: "Veg Biryani",
     description: "Fragrant vegetable biryani with seasonal vegetables and aromatic spices.",
     price: 280,
-    image: "https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=800&q=80",
+    image: "https://www.madhuseverydayindian.com/wp-content/uploads/2022/11/easy-vegetable-biryani.jpg",
     category: "biryanis"
   },
   {
@@ -70,44 +70,10 @@ const products = [
     name: "Fish Curry",
     description: "Authentic fish curry with coconut milk and traditional coastal spices.",
     price: 380,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=800&q=80",
+    image: "https://i.ytimg.com/vi/ZqkcrV326WY/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAip-TOl9jJKv0sUy71i5wku8GFqQ",
     category: "non-veg"
-  },
-  {
-    name: "Special Thali",
-    description: "Complete meal with rice, dal, vegetables, curry, pickle, and dessert.",
-    price: 450,
-    image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
-    category: "specials"
-  },
-  {
-    name: "Family Combo",
-    description: "Perfect for 4 people - includes biryani, curry, dal, and pickles.",
-    price: 1200,
-    image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
-    category: "specials"
-  },
-  {
-    name: "Green Chilli Pickle",
-    description: "Spicy green chilli pickle with a perfect balance of heat and flavor.",
-    price: 220,
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
-    category: "pickles"
-  },
-  {
-    name: "Garlic Pickle",
-    description: "Aromatic garlic pickle with a strong, pungent flavor that enhances any meal.",
-    price: 280,
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
-    category: "pickles"
-  },
-  {
-    name: "Veg Pulao",
-    description: "Fragrant basmati rice cooked with mixed vegetables and aromatic spices.",
-    price: 250,
-    image: "https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=800&q=80",
-    category: "biryanis"
   }
+  
 ];
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce')

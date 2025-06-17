@@ -15,7 +15,7 @@ interface Product {
 
 const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist } = useCart();
+  const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, formatPrice } = useCart();
 
   // Save scroll position before refresh
   useEffect(() => {
@@ -196,7 +196,7 @@ const Products = () => {
 
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-orange-600">
-                    ₹{product.price}
+                    ₹{formatPrice(product.price)}
                   </span>
                   <button
                     onClick={() => handleAddToCart(product)}

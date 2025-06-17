@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const Hero = () => {
@@ -50,7 +49,7 @@ const Hero = () => {
           <div className="relative animate-fade-in">
             <div className="relative z-10">
               <img
-                src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=800&q=80"
+                src="/images (1).png"
                 alt="Traditional pickles in wooden bowls"
                 className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
               />

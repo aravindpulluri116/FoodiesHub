@@ -34,6 +34,24 @@ const orderSchema = new mongoose.Schema({
   address: {
     type: String,
     required: [true, 'Delivery address is required']
+  },
+  payment: {
+    method: {
+      type: String,
+      enum: ['cash_on_delivery', 'online'],
+      required: [true, 'Payment method is required']
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed'],
+      default: 'pending'
+    },
+    transactionId: String,
+    paymentDetails: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed
+    },
+    paidAt: Date
   }
 }, {
   timestamps: true
@@ -77,6 +95,37 @@ orderSchema.methods.updateStatus = async function(newStatus) {
     throw new Error('Order not found');
   }
   
+  return updatedOrder;
+};
+
+// Add method to update payment status
+orderSchema.methods.updatePaymentStatus = async function(status, transactionId = null, paymentDetails = null) {
+  const updateData = {
+    'payment.status': status
+  };
+
+  if (transactionId) {
+    updateData['payment.transactionId'] = transactionId;
+  }
+
+  if (paymentDetails) {
+    updateData['payment.paymentDetails'] = paymentDetails;
+  }
+
+  if (status === 'completed') {
+    updateData['payment.paidAt'] = new Date();
+  }
+
+  const updatedOrder = await this.constructor.findOneAndUpdate(
+    { _id: this._id },
+    { $set: updateData },
+    { new: true, runValidators: false }
+  ).populate('user', 'name email').populate('items.product', 'name price');
+
+  if (!updatedOrder) {
+    throw new Error('Order not found');
+  }
+
   return updatedOrder;
 };
 

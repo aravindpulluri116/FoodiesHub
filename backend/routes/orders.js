@@ -16,6 +16,7 @@ const isAuthenticated = (req, res, next) => {
 router.post('/', isAuthenticated, async (req, res) => {
   try {
     console.log('Creating order for user:', req.user._id);
+    console.log('Incoming order data (req.body):', JSON.stringify(req.body, null, 2));
     const user = await User.findById(req.user._id);
     
     if (!user) {
@@ -49,6 +50,7 @@ router.post('/', isAuthenticated, async (req, res) => {
       address: req.body.address
     });
 
+    console.log('Attempting to save order:', order);
     await order.save();
     console.log('Order saved successfully:', order);
 

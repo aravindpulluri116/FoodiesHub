@@ -11,15 +11,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from '@/components/ui/use-toast';
+import { config } from '@/config';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: config.apiUrl,
   withCredentials: true
 });
 
+// Load Cashfree SDK
+declare global {
+  interface Window {
+    Cashfree: any;
+  }
+}
+
 interface OrderItem {
   product: {
+    _id: string;
     name: string;
     price: number;
   };
@@ -33,6 +42,16 @@ interface Order {
   status: 'pending' | 'placed' | 'completed' | 'cancelled';
   address: string;
   createdAt: string;
+  payment?: {
+    status: 'completed' | 'pending' | 'cancelled';
+  };
+}
+
+interface PaymentResponse {
+  success: boolean;
+  data: {
+    payment_session_id: string;
+  };
 }
 
 const MyOrders = () => {
@@ -40,6 +59,7 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -48,11 +68,18 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     try {
       const response = await api.get('/orders/my-orders');
-      setOrders(response.data);
+      // Ensure orders is always an array
+      setOrders(Array.isArray(response.data) ? response.data : []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      setOrders([]); // Set empty array on error
       setLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -80,6 +107,45 @@ const MyOrders = () => {
     } finally {
       setCancelDialogOpen(false);
       setOrderToCancel(null);
+    }
+  };
+
+  const handlePayNow = async (orderId: string) => {
+    try {
+      setProcessingPayment(true);
+      const order = orders.find(o => o._id === orderId);
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      const response = await api.post<PaymentResponse>('/payments/create-order', {
+        items: order.items.map(item => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+          price: item.product.price
+        })),
+        deliveryAddress: order.address,
+        totalAmount: order.totalAmount.toString()
+      });
+
+      if (response.data.success) {
+        const { payment_session_id } = response.data.data;
+        // Launch Cashfree checkout
+        window.Cashfree.checkout({
+          paymentSessionId: payment_session_id,
+          redirectTarget: "_self"
+        });
+      } else {
+        throw new Error('Failed to create payment');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Payment Error",
+        description: error.message || "Failed to process payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -118,26 +184,33 @@ const MyOrders = () => {
       ) : (
         <div className="grid gap-4">
           {orders.map((order) => (
-            <Card key={order._id} className="overflow-hidden">
+            <Card key={order._id} className="overflow-hidden max-w-3xl mx-auto">
               <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h2 className="text-lg font-semibold">Order #{order._id}</h2>
                     <p className="text-sm text-gray-600">
                       Placed on {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                  <div className="flex justify-end items-center">
+                    <span className={`px-4 py-2 rounded-full text-base font-medium ${
+                      order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>
+                  </div>
                 </div>
 
-                <div className="mb-4">
+                <div className="mt-4">
                   <h3 className="font-semibold mb-2">Delivery Address:</h3>
                   <p className="text-sm text-gray-600">{order.address}</p>
                 </div>
 
-                <div className="mb-4">
+                <div className="mt-4">
                   <h3 className="font-semibold mb-2">Items:</h3>
                   <div className="space-y-2">
                     {order.items.map((item, index) => (
@@ -160,8 +233,25 @@ const MyOrders = () => {
                   </span>
                 </div>
 
+                {/* Display Payment Status */}
+                <div className="mt-2 flex items-center">
+                  <span className="font-semibold mr-2">Payment Status: </span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {order.payment?.status === 'completed' ? '✓ Paid' : 'Pending'}
+                  </span>
+                </div>
+
                 {order.status === 'pending' && (
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 flex justify-end space-x-2">
+                    <Button
+                      onClick={() => handlePayNow(order._id)}
+                      className="bg-orange-600 hover:bg-orange-700"
+                      disabled={processingPayment}
+                    >
+                      {processingPayment ? 'Processing...' : 'Pay Now'}
+                    </Button>
                     <Button
                       variant="destructive"
                       onClick={() => handleCancelClick(order._id)}

@@ -1,11 +1,11 @@
-
 import React from 'react';
 import { Phone } from 'lucide-react';
+import { config } from '../config';
 
 const Contact = () => {
   const handleWhatsAppClick = () => {
     const message = "Hi, I'd like to know more about Sneha's Pickles!";
-    const whatsappUrl = `https://wa.me/+918886113939?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -81,12 +81,12 @@ const Contact = () => {
             We offer delivery across India
           </p>
           <a
-            href="https://maps.google.com/?q=Ghatkesar,Hyderabad,India"
+            href={config.googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="text-blue-600 hover:text-blue-800"
           >
-            View on Google Maps
+            Ghatkesar, Hyderabad, India
           </a>
         </div>
 

@@ -3,10 +3,11 @@ import axios from 'axios';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { toast } from 'react-hot-toast';
+import { config } from '../config';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
@@ -117,8 +118,8 @@ const AdminPanel = () => {
       <h1 className="text-2xl font-bold mb-6">Admin Panel - Orders</h1>
       <div className="grid gap-4">
         {orders.map((order) => (
-          <Card key={order._id} className="p-4">
-            <div className="flex justify-between items-start">
+          <Card key={order._id} className="p-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h2 className="text-lg font-semibold">Order #{order._id}</h2>
                 <p className="text-sm text-gray-600">Customer: {order.user.name}</p>
@@ -128,9 +129,15 @@ const AdminPanel = () => {
                   Date: {new Date(order.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-semibold">Total: ₹{order.totalAmount}</p>
-                <p className="text-sm text-gray-600">Status: {order.status}</p>
+              <div className="flex justify-end items-center">
+                <span className={`px-4 py-2 rounded-full text-base font-medium ${
+                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                  order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
               </div>
             </div>
             <div className="mt-4">
