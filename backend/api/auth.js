@@ -1,5 +1,5 @@
-import dbConnect from './db.js';
-import User from './models/User.js';
+import dbConnect from '../db.js';
+import User from '../models/User.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -8,14 +8,17 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Preflight
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // Helper: parse path
-  const path = req.url.split('?')[0];
+  // Helper: parse path - get the part after /api/auth
+  const fullPath = req.url;
+  const path = fullPath.replace('/api/auth', '') || '/';
+
+  console.log('Auth endpoint accessed:', { fullPath, path, method: req.method });
 
   // /api/auth/me
   if (path === '/me' && req.method === 'GET') {
@@ -72,6 +75,7 @@ export default async function handler(req, res) {
 
   // /api/auth/google
   if (path === '/google' && req.method === 'GET') {
+    console.log('Google OAuth redirect requested');
     // Google OAuth redirect
     let backendUrl = process.env.BACKEND_URL;
     if (!backendUrl) {
@@ -86,6 +90,7 @@ export default async function handler(req, res) {
       `response_type=code&` +
       `scope=openid email profile&` +
       `access_type=offline`;
+    console.log('Redirecting to Google OAuth:', googleAuthUrl);
     res.redirect(googleAuthUrl);
     return;
   }
@@ -151,5 +156,6 @@ export default async function handler(req, res) {
   }
 
   // Not found
+  console.log('Auth endpoint not found:', { path, method: req.method });
   res.status(404).json({ message: 'Not found', path, method: req.method });
 } 
