@@ -26,15 +26,23 @@ export default async function handler(req, res) {
         return res.status(500).json({ message: 'Google OAuth not configured' });
       }
 
-      if (!process.env.BACKEND_URL) {
-        console.error('BACKEND_URL not set');
-        return res.status(500).json({ message: 'Backend URL not configured' });
+      // Get the backend URL - use environment variable or construct from request
+      let backendUrl = process.env.BACKEND_URL;
+      if (!backendUrl) {
+        // Fallback: construct from request headers
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        backendUrl = `${protocol}://${host}`;
+        console.log('Constructed backend URL:', backendUrl);
       }
+
+      // Remove /api from the backend URL for OAuth callbacks
+      backendUrl = backendUrl.replace('/api', '');
 
       // Redirect to Google OAuth
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
-        `redirect_uri=${process.env.BACKEND_URL}/api/auth/google/callback&` +
+        `redirect_uri=${backendUrl}/api/auth/google/callback&` +
         `response_type=code&` +
         `scope=openid email profile&` +
         `access_type=offline`;

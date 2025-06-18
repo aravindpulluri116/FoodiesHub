@@ -24,6 +24,18 @@ export default async function handler(req, res) {
         return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
       }
 
+      // Get the backend URL - use environment variable or construct from request
+      let backendUrl = process.env.BACKEND_URL;
+      if (!backendUrl) {
+        // Fallback: construct from request headers
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        backendUrl = `${protocol}://${host}`;
+      }
+
+      // Remove /api from the backend URL for OAuth callbacks
+      backendUrl = backendUrl.replace('/api', '');
+
       // Exchange code for access token
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -34,7 +46,7 @@ export default async function handler(req, res) {
           code,
           client_id: process.env.GOOGLE_CLIENT_ID,
           client_secret: process.env.GOOGLE_CLIENT_SECRET,
-          redirect_uri: `${process.env.BACKEND_URL}/api/auth/google/callback`,
+          redirect_uri: `${backendUrl}/api/auth/google/callback`,
           grant_type: 'authorization_code',
         }),
       });
@@ -42,6 +54,7 @@ export default async function handler(req, res) {
       const tokenData = await tokenResponse.json();
       
       if (!tokenData.access_token) {
+        console.error('Token exchange failed:', tokenData);
         return res.redirect(`${process.env.FRONTEND_URL}?error=token_failed`);
       }
 
@@ -55,6 +68,7 @@ export default async function handler(req, res) {
       const userData = await userResponse.json();
       
       if (!userData.id) {
+        console.error('User info fetch failed:', userData);
         return res.redirect(`${process.env.FRONTEND_URL}?error=user_info_failed`);
       }
 
