@@ -73,7 +73,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Fetch cart items
   const fetchCart = async () => {
     try {
-      const response = await api.get('/api/cart');
+      const response = await api.get('/cart');
       if (response.data) {
         setCartItems(response.data);
       }
@@ -86,7 +86,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Fetch wishlist items
   const fetchWishlist = async () => {
     try {
-      const response = await api.get('/api/wishlist');
+      const response = await api.get('/wishlist');
       const data = response.data || [];
       setWishlistItems(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -118,7 +118,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = async (product: Product) => {
     try {
-      const response = await api.post('/api/cart/add', {
+      const response = await api.post('/cart/add', {
         productId: product._id,
         quantity: 1
       });
@@ -142,7 +142,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromCart = async (productId: string) => {
     try {
-      const response = await api.delete(`/api/cart/remove/${productId}`);
+      const response = await api.delete(`/cart/remove/${productId}`);
       if (response.data) {
         setCartItems(response.data);
         toast({
@@ -162,7 +162,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const updateQuantity = async (productId: string, quantity: number) => {
     try {
-      const response = await api.put(`/api/cart/update/${productId}`, { quantity });
+      const response = await api.put(`/cart/update/${productId}`, { quantity });
       if (response.data) {
         setCartItems(response.data);
       }
@@ -178,7 +178,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToWishlist = async (product: Product) => {
     try {
-      const response = await api.post('/api/wishlist/add', {
+      const response = await api.post('/wishlist/add', {
         productId: product._id
       });
       
@@ -202,7 +202,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromWishlist = async (productId: string) => {
     try {
-      const response = await api.delete(`/api/wishlist/remove/${productId}`);
+      const response = await api.delete(`/wishlist/remove/${productId}`);
       if (response.data) {
         const data = response.data || [];
         setWishlistItems(Array.isArray(data) ? data : []);
@@ -238,7 +238,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = async () => {
     try {
-      const response = await api.delete('/api/cart/clear');
+      const response = await api.delete('/cart/clear');
       if (response.data) {
         setCartItems([]);
         toast({

@@ -3,6 +3,7 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { config } from '../config';
 
 interface Product {
   _id: string;
@@ -51,7 +52,7 @@ const Products = () => {
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const response = await axios.get('/api/products');
+      const response = await axios.get(`${config.apiUrl}/products`);
       return response.data;
     },
     staleTime: 0,

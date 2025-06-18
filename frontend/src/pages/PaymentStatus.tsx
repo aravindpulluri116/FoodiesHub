@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { config } from '../config';
 
 const PaymentStatus: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -18,7 +19,7 @@ const PaymentStatus: React.FC = () => {
           throw new Error('Order ID not found');
         }
 
-        const response = await axios.get(`/api/payment/verify/${orderId}`);
+        const response = await axios.get(`${config.apiUrl}/payment/verify/${orderId}`);
         const orderStatus = response.data.order_status;
 
         if (orderStatus === 'PAID') {
