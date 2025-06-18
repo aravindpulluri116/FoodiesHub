@@ -87,21 +87,39 @@ export default async function handler(req, res) {
 
   // /api/auth/google
   if (route === '/google' && req.method === 'GET' && !subroute) {
+    console.log('=== GOOGLE OAUTH ROUTE MATCHED ===');
     console.log('Google OAuth redirect requested');
+    console.log('Environment variables:');
+    console.log('- GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+    console.log('- BACKEND_URL:', process.env.BACKEND_URL || 'NOT SET');
+    console.log('- FRONTEND_URL:', process.env.FRONTEND_URL || 'NOT SET');
+    
+    // Check if required environment variables are set
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error('GOOGLE_CLIENT_ID not set');
+      return res.status(500).json({ 
+        message: 'Google OAuth not configured',
+        error: 'GOOGLE_CLIENT_ID environment variable is missing'
+      });
+    }
+
     // Google OAuth redirect
     let backendUrl = process.env.BACKEND_URL;
     if (!backendUrl) {
       const protocol = req.headers['x-forwarded-proto'] || 'https';
       const host = req.headers['x-forwarded-host'] || req.headers.host;
       backendUrl = `${protocol}://${host}`;
+      console.log('Constructed backend URL:', backendUrl);
     }
     backendUrl = backendUrl.replace('/api', '');
+    
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
       `redirect_uri=${backendUrl}/api/auth/google/callback&` +
       `response_type=code&` +
       `scope=openid email profile&` +
       `access_type=offline`;
+    
     console.log('Redirecting to Google OAuth:', googleAuthUrl);
     res.redirect(googleAuthUrl);
     return;
