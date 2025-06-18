@@ -14,23 +14,17 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Robust path parsing
-  // Vercel may set req.url to /google, /me, /google/callback, etc.
-  // Or it may include query string: /google?foo=bar
-  // Let's extract the first segment after the initial /
+  // Robust path parsing for Vercel
   const urlNoQuery = req.url.split('?')[0];
-  const segments = urlNoQuery.split('/').filter(Boolean); // removes empty strings
-  const route = segments[0] ? `/${segments[0]}` : '/';
-  const subroute = segments[1] ? `/${segments[1]}` : '';
+  const segments = urlNoQuery.split('/').filter(Boolean);
+  const route = segments.length === 0 ? '/' : `/${segments.join('/')}`;
+  console.log('DEBUG req.url:', req.url, 'segments:', segments, 'route:', route);
 
-  console.log('AUTH DEBUG:', {
-    reqUrl: req.url,
-    urlNoQuery,
-    segments,
-    route,
-    subroute,
-    method: req.method
-  });
+  // /api/auth
+  if (route === '/' && req.method === 'GET') {
+    res.status(404).json({ message: 'Not found', route, method: req.method });
+    return;
+  }
 
   // /api/auth/me
   if (route === '/me' && req.method === 'GET') {
@@ -58,40 +52,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  // /api/auth/google-test
-  if (route === '/google-test' && req.method === 'GET') {
-    res.status(200).json({
-      message: 'Google OAuth test endpoint is working!',
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      url: req.url,
-      env_vars: {
-        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
-        BACKEND_URL: process.env.BACKEND_URL || 'Not set',
-        FRONTEND_URL: process.env.FRONTEND_URL || 'Not set'
-      }
-    });
-    return;
-  }
-
-  // /api/auth/google-simple
-  if (route === '/google-simple' && req.method === 'GET') {
-    res.status(200).json({
-      message: 'Simple Google test endpoint is working!',
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      url: req.url
-    });
-    return;
-  }
-
   // /api/auth/google
-  if (route === '/google' && req.method === 'GET' && !subroute) {
+  if (route === '/google' && req.method === 'GET') {
     console.log('=== GOOGLE OAUTH ROUTE MATCHED ===');
-    console.log('Google OAuth redirect requested');
-    console.log('Environment variables:');
-    console.log('- GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
-    
     if (!process.env.GOOGLE_CLIENT_ID) {
       console.error('GOOGLE_CLIENT_ID not set');
       return res.status(500).json({ 
@@ -99,8 +62,6 @@ export default async function handler(req, res) {
         error: 'GOOGLE_CLIENT_ID environment variable is missing'
       });
     }
-
-    // Hardcoded backend URL
     const backendUrl = 'https://foodieshubbackend.vercel.app';
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
@@ -108,14 +69,13 @@ export default async function handler(req, res) {
       `response_type=code&` +
       `scope=openid email profile&` +
       `access_type=offline`;
-    
     console.log('Redirecting to Google OAuth:', googleAuthUrl);
     res.redirect(googleAuthUrl);
     return;
   }
 
   // /api/auth/google/callback
-  if (route === '/google' && subroute === '/callback' && req.method === 'GET') {
+  if (route === '/google/callback' && req.method === 'GET') {
     try {
       await dbConnect();
       let codeParam;
@@ -124,9 +84,7 @@ export default async function handler(req, res) {
         codeParam = params.get('code');
       }
       if (!codeParam) return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
-      // Hardcoded backend URL
       const backendUrl = 'https://foodieshubbackend.vercel.app';
-      // Exchange code for access token
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -140,13 +98,11 @@ export default async function handler(req, res) {
       });
       const tokenData = await tokenResponse.json();
       if (!tokenData.access_token) return res.redirect(`${process.env.FRONTEND_URL}?error=token_failed`);
-      // Get user info from Google
       const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${tokenData.access_token}` },
       });
       const userData = await userResponse.json();
       if (!userData.id) return res.redirect(`${process.env.FRONTEND_URL}?error=user_info_failed`);
-      // Find or create user
       let user = await User.findOne({ googleId: userData.id });
       if (!user) {
         user = await User.create({
@@ -156,7 +112,6 @@ export default async function handler(req, res) {
           picture: userData.picture,
         });
       }
-      // Create a simple session token
       const sessionToken = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
       res.setHeader('Set-Cookie', `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=None`);
       res.redirect(`${process.env.FRONTEND_URL}?success=true`);
@@ -168,6 +123,5 @@ export default async function handler(req, res) {
   }
 
   // Not found
-  console.log('Auth endpoint not found:', { route, subroute, method: req.method });
-  res.status(404).json({ message: 'Not found', route, subroute, method: req.method });
+  res.status(404).json({ message: 'Not found', route, method: req.method });
 } 
