@@ -14,14 +14,26 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Helper: parse path - get the part after /api/auth
-  const fullPath = req.url;
-  const path = fullPath.replace('/api/auth', '') || '/';
+  // Robust path parsing
+  // Vercel may set req.url to /google, /me, /google/callback, etc.
+  // Or it may include query string: /google?foo=bar
+  // Let's extract the first segment after the initial /
+  const urlNoQuery = req.url.split('?')[0];
+  const segments = urlNoQuery.split('/').filter(Boolean); // removes empty strings
+  const route = segments[0] ? `/${segments[0]}` : '/';
+  const subroute = segments[1] ? `/${segments[1]}` : '';
 
-  console.log('Auth endpoint accessed:', { fullPath, path, method: req.method });
+  console.log('AUTH DEBUG:', {
+    reqUrl: req.url,
+    urlNoQuery,
+    segments,
+    route,
+    subroute,
+    method: req.method
+  });
 
   // /api/auth/me
-  if (path === '/me' && req.method === 'GET') {
+  if (route === '/me' && req.method === 'GET') {
     try {
       await dbConnect();
       const sessionCookie = req.headers.cookie?.split(';').find(c => c.trim().startsWith('session='));
@@ -40,14 +52,14 @@ export default async function handler(req, res) {
   }
 
   // /api/auth/logout
-  if (path === '/logout' && req.method === 'GET') {
+  if (route === '/logout' && req.method === 'GET') {
     res.setHeader('Set-Cookie', 'session=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0');
     res.redirect(process.env.FRONTEND_URL || '/');
     return;
   }
 
   // /api/auth/google-test
-  if (path === '/google-test' && req.method === 'GET') {
+  if (route === '/google-test' && req.method === 'GET') {
     res.status(200).json({
       message: 'Google OAuth test endpoint is working!',
       timestamp: new Date().toISOString(),
@@ -63,7 +75,7 @@ export default async function handler(req, res) {
   }
 
   // /api/auth/google-simple
-  if (path === '/google-simple' && req.method === 'GET') {
+  if (route === '/google-simple' && req.method === 'GET') {
     res.status(200).json({
       message: 'Simple Google test endpoint is working!',
       timestamp: new Date().toISOString(),
@@ -74,7 +86,7 @@ export default async function handler(req, res) {
   }
 
   // /api/auth/google
-  if (path === '/google' && req.method === 'GET') {
+  if (route === '/google' && req.method === 'GET' && !subroute) {
     console.log('Google OAuth redirect requested');
     // Google OAuth redirect
     let backendUrl = process.env.BACKEND_URL;
@@ -96,13 +108,11 @@ export default async function handler(req, res) {
   }
 
   // /api/auth/google/callback
-  if (path === '/google/callback' && req.method === 'GET') {
+  if (route === '/google' && subroute === '/callback' && req.method === 'GET') {
     try {
       await dbConnect();
-      const { code } = req.query || {};
-      // Parse code from query string if not present
-      let codeParam = code;
-      if (!codeParam && req.url.includes('?')) {
+      let codeParam;
+      if (req.url.includes('?')) {
         const params = new URLSearchParams(req.url.split('?')[1]);
         codeParam = params.get('code');
       }
@@ -156,6 +166,6 @@ export default async function handler(req, res) {
   }
 
   // Not found
-  console.log('Auth endpoint not found:', { path, method: req.method });
-  res.status(404).json({ message: 'Not found', path, method: req.method });
+  console.log('Auth endpoint not found:', { route, subroute, method: req.method });
+  res.status(404).json({ message: 'Not found', route, subroute, method: req.method });
 } 
