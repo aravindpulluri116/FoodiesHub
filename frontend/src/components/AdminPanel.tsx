@@ -98,6 +98,9 @@ const AdminPanel = () => {
     }
   };
 
+  // For Google OAuth login, use:
+  const googleLoginUrl = `${config.apiUrl}/auth/google`;
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
