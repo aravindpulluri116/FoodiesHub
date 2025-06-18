@@ -1,5 +1,5 @@
-import dbConnect from '../db';
-import Order from '../models/Order';
+import dbConnect from '../db.js';
+import Order from '../models/Order.js';
 
 export default async function handler(req, res) {
   // Add CORS headers
