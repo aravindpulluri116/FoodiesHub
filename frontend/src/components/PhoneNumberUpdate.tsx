@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import axios from 'axios';
+import { config } from '../config';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'

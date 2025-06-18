@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import PhoneNumberUpdate from './PhoneNumberUpdate';
+import { config } from '../config';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'

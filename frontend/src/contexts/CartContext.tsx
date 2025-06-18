@@ -5,7 +5,7 @@ import { config } from '../config';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: '',  // Remove /api prefix since it's handled by the proxy
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
