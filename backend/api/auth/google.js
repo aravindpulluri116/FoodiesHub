@@ -11,8 +11,26 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Debug logging
+  console.log('Google OAuth endpoint accessed');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
+  console.log('BACKEND_URL:', process.env.BACKEND_URL);
+
   try {
     if (req.method === 'GET') {
+      // Check if required environment variables are set
+      if (!process.env.GOOGLE_CLIENT_ID) {
+        console.error('GOOGLE_CLIENT_ID not set');
+        return res.status(500).json({ message: 'Google OAuth not configured' });
+      }
+
+      if (!process.env.BACKEND_URL) {
+        console.error('BACKEND_URL not set');
+        return res.status(500).json({ message: 'Backend URL not configured' });
+      }
+
       // Redirect to Google OAuth
       const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
@@ -21,6 +39,7 @@ export default async function handler(req, res) {
         `scope=openid email profile&` +
         `access_type=offline`;
       
+      console.log('Redirecting to:', googleAuthUrl);
       res.redirect(googleAuthUrl);
     } else {
       res.status(405).json({ message: 'Method Not Allowed' });
