@@ -11,12 +11,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Debug logging
-  console.log('Google OAuth endpoint accessed');
+  // Debug logging - this should appear in Vercel logs
+  console.log('=== GOOGLE OAUTH ENDPOINT ACCESSED ===');
+  console.log('Timestamp:', new Date().toISOString());
   console.log('Method:', req.method);
   console.log('URL:', req.url);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
   console.log('BACKEND_URL:', process.env.BACKEND_URL);
+  console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
 
   try {
     if (req.method === 'GET') {
