@@ -14,11 +14,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Robust path parsing for Vercel
-  const urlNoQuery = req.url.split('?')[0];
+  // Remove /api/auth prefix if present (for Vercel)
+  let urlPath = req.url;
+  if (urlPath.startsWith('/api/auth')) {
+    urlPath = urlPath.slice('/api/auth'.length) || '/';
+  }
+  const urlNoQuery = urlPath.split('?')[0];
   const segments = urlNoQuery.split('/').filter(Boolean);
   const route = segments.length === 0 ? '/' : `/${segments.join('/')}`;
-  console.log('DEBUG req.url:', req.url, 'segments:', segments, 'route:', route);
+  console.log('DEBUG req.url:', req.url, 'urlPath:', urlPath, 'segments:', segments, 'route:', route);
 
   // /api/auth
   if (route === '/' && req.method === 'GET') {
