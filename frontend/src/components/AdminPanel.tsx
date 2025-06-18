@@ -44,7 +44,7 @@ const AdminPanel = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/auth/me');
       setIsAuthenticated(true);
       fetchOrders();
     } catch (error) {
@@ -56,7 +56,7 @@ const AdminPanel = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await api.get('/api/admin/orders');
+      const response = await api.get('/admin/orders');
       setOrders(response.data);
       setLoading(false);
     } catch (error: any) {
@@ -71,7 +71,7 @@ const AdminPanel = () => {
   const handlePlaceOrder = async (orderId: string) => {
     try {
       console.log('Placing order:', orderId);
-      const response = await api.post(`/api/admin/orders/${orderId}/place`);
+      const response = await api.post(`/admin/orders/${orderId}/place`);
       console.log('Place order response:', response.data);
       toast.success('Order placed successfully');
       fetchOrders();
@@ -86,7 +86,7 @@ const AdminPanel = () => {
   const handleCancelOrder = async (orderId: string) => {
     try {
       console.log('Cancelling order:', orderId);
-      const response = await api.post(`/api/admin/orders/${orderId}/cancel`);
+      const response = await api.post(`/admin/orders/${orderId}/cancel`);
       console.log('Cancel order response:', response.data);
       toast.success('Order cancelled successfully');
       fetchOrders();
