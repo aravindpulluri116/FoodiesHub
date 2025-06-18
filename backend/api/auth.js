@@ -14,10 +14,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Remove /api/auth prefix if present (for Vercel)
+  // Robust path parsing for monorepo or direct deployment
   let urlPath = req.url;
-  if (urlPath.startsWith('/api/auth')) {
-    urlPath = urlPath.slice('/api/auth'.length) || '/';
+  // Always use only the path after the last '/api/auth'
+  const idx = urlPath.lastIndexOf('/api/auth');
+  if (idx !== -1) {
+    urlPath = urlPath.slice(idx + '/api/auth'.length) || '/';
   }
   const urlNoQuery = urlPath.split('?')[0];
   const segments = urlNoQuery.split('/').filter(Boolean);
