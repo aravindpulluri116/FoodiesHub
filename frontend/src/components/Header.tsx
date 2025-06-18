@@ -3,6 +3,7 @@ import { Home, Package, Phone, Settings, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 import { Button } from './ui/button';
 import { Link, useLocation } from 'react-router-dom';
+import { config } from '../config';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,7 +21,7 @@ const Header = () => {
 
   useEffect(() => {
     // Fetch user info on mount
-    axios.get('/api/auth/me', { withCredentials: true })
+    axios.get(`${config.apiUrl}/auth/me`, { withCredentials: true })
       .then(res => {
         setUser(res.data);
         setLoading(false);
@@ -32,7 +33,7 @@ const Header = () => {
   }, []);
 
   const handleLogout = async () => {
-    await axios.get('/api/auth/logout', { withCredentials: true });
+    await axios.get(`${config.apiUrl}/auth/logout`, { withCredentials: true });
     setUser(null);
     window.location.reload();
   };
