@@ -14,11 +14,5 @@ export default async function handler(req, res) {
     return;
   }
 
-  try {
-    await dbConnect();
-    // ... existing code ...
-  } catch (err) {
-    console.error('Error in dbConnect or handler:', err);
-    res.status(500).json({ message: 'Internal server error', error: err.message });
-  }
+  res.status(200).json({ message: 'Cart endpoint placeholder' });
 } 

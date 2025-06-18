@@ -91,10 +91,7 @@ export default async function handler(req, res) {
     console.log('Google OAuth redirect requested');
     console.log('Environment variables:');
     console.log('- GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
-    console.log('- BACKEND_URL:', process.env.BACKEND_URL || 'NOT SET');
-    console.log('- FRONTEND_URL:', process.env.FRONTEND_URL || 'NOT SET');
     
-    // Check if required environment variables are set
     if (!process.env.GOOGLE_CLIENT_ID) {
       console.error('GOOGLE_CLIENT_ID not set');
       return res.status(500).json({ 
@@ -103,16 +100,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // Google OAuth redirect
-    let backendUrl = process.env.BACKEND_URL;
-    if (!backendUrl) {
-      const protocol = req.headers['x-forwarded-proto'] || 'https';
-      const host = req.headers['x-forwarded-host'] || req.headers.host;
-      backendUrl = `${protocol}://${host}`;
-      console.log('Constructed backend URL:', backendUrl);
-    }
-    backendUrl = backendUrl.replace('/api', '');
-    
+    // Hardcoded backend URL
+    const backendUrl = 'https://foodieshubbackend.vercel.app';
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
       `redirect_uri=${backendUrl}/api/auth/google/callback&` +
@@ -135,13 +124,8 @@ export default async function handler(req, res) {
         codeParam = params.get('code');
       }
       if (!codeParam) return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
-      let backendUrl = process.env.BACKEND_URL;
-      if (!backendUrl) {
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = req.headers['x-forwarded-host'] || req.headers.host;
-        backendUrl = `${protocol}://${host}`;
-      }
-      backendUrl = backendUrl.replace('/api', '');
+      // Hardcoded backend URL
+      const backendUrl = 'https://foodieshubbackend.vercel.app';
       // Exchange code for access token
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
