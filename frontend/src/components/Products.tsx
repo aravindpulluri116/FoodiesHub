@@ -53,8 +53,8 @@ const Products = () => {
     queryKey: ['products'],
     queryFn: async () => {
       try {
-        console.log('Fetching products from:', `${config.apiUrl}/api/products`);
-        const response = await axios.get(`${config.apiUrl}/api/products`, {
+        console.log('Fetching products from:', `${config.apiUrl}/products`);
+        const response = await axios.get(`${config.apiUrl}/products`, {
           withCredentials: true,
           headers: {
             'Accept': 'application/json',
