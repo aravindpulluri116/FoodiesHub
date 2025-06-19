@@ -3,13 +3,23 @@
 import dbConnect from '../db.js';
 import User from '../models/User.js';
 
-// 🔒 Hard‑coded URLs for now (replace with ENV vars later)
-const FRONTEND_URL = 'https://foodieshub-gf03ozif6-aravind-pulluris-projects.vercel.app';
-const BACKEND_URL  = 'https://foodieshubbackend.vercel.app';
+// 🔒 Use environment variables for URLs
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://foodieshub-two.vercel.app';
+const BACKEND_URL  = process.env.BACKEND_URL || 'https://foodieshubbackend.vercel.app';
 
 export default async function handler(req, res) {
-  // 1) CORS headers
-  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  // 1) CORS headers - allow multiple origins
+  const allowedOrigins = [
+    'https://foodieshub-two.vercel.app',
+    'https://foodieshub-gf03ozif6-aravind-pulluris-projects.vercel.app',
+    'http://localhost:5173'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');

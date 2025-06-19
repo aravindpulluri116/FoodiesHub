@@ -20,22 +20,45 @@ const Header = () => {
   };
 
   useEffect(() => {
-    // Fetch user info on mount
-    axios.get(`${config.apiUrl}/auth/me`, { withCredentials: true })
-      .then(res => {
-        setUser(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
+    // Fetch user info on mount with better error handling
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${config.apiUrl}/auth/me`, { 
+          withCredentials: true,
+          timeout: 5000 // 5 second timeout
+        });
+        
+        // Ensure response.data is valid
+        if (response.data && typeof response.data === 'object') {
+          setUser(response.data);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.log('User not authenticated or API error:', error.message);
         setUser(null);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const handleLogout = async () => {
-    await axios.get(`${config.apiUrl}/auth/logout`, { withCredentials: true });
-    setUser(null);
-    window.location.reload();
+    try {
+      await axios.get(`${config.apiUrl}/auth/logout`, { 
+        withCredentials: true,
+        timeout: 5000
+      });
+      setUser(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear user state even if logout fails
+      setUser(null);
+      window.location.reload();
+    }
   };
 
   return (
