@@ -23,7 +23,7 @@ const Header = () => {
     // Fetch user info on mount with better error handling
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${config.apiUrl}/auth/me`, { 
+        const response = await axios.get(`${config.apiBaseUrl}/api/auth/me`, { 
           withCredentials: true,
           timeout: 5000 // 5 second timeout
         });
@@ -47,7 +47,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${config.apiUrl}/auth/logout`, { 
+      await axios.get(`${config.apiBaseUrl}/api/auth/logout`, { 
         withCredentials: true,
         timeout: 5000
       });
@@ -56,8 +56,8 @@ const Header = () => {
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear user state even if logout fails
-    setUser(null);
-    window.location.reload();
+      setUser(null);
+      window.location.reload();
     }
   };
 
@@ -167,7 +167,7 @@ const Header = () => {
               </>
             ) : (
               <a
-                href={`${config.apiUrl}/auth/google`}
+                href={`${config.apiBaseUrl}/api/auth/google`}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
               >
                 Login with Google
@@ -291,7 +291,7 @@ const Header = () => {
                   </div>
                 ) : (
                   <a
-                    href={`${config.apiUrl}/auth/google`}
+                    href={`${config.apiBaseUrl}/api/auth/google`}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
                   >
                     Login with Google

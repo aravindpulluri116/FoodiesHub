@@ -65,18 +65,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Calculate total amount
-  const totalAmount = cartItems.reduce((total, item) => {
-    return total + (item.productId.price * item.quantity);
-  }, 0);
+  // Calculate total amount with null checks
+  const totalAmount = Array.isArray(cartItems) ? cartItems.reduce((total, item) => {
+    if (!item?.productId?.price) return total;
+    return total + (item.productId.price * (item.quantity || 0));
+  }, 0) : 0;
 
   // Fetch cart items
   const fetchCart = async () => {
     try {
       const response = await api.get('/cart');
-      if (response.data) {
-        setCartItems(response.data);
-      }
+      setCartItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching cart:', error);
       setCartItems([]);
@@ -87,18 +86,32 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const fetchWishlist = async () => {
     try {
       const response = await api.get('/wishlist');
-      const data = response.data || [];
-      setWishlistItems(Array.isArray(data) ? data : []);
+      setWishlistItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
       setWishlistItems([]);
     }
   };
 
-  // Check if item is in wishlist
+  // Check if item is in wishlist with null check
   const isInWishlist = (productId: string) => {
     if (!Array.isArray(wishlistItems)) return false;
     return wishlistItems.some(item => item?.productId?._id === productId);
+  };
+
+  // Get total items with null check
+  const getTotalItems = () => {
+    if (!Array.isArray(cartItems)) return 0;
+    return cartItems.reduce((total, item) => total + (item?.quantity || 0), 0);
+  };
+
+  // Get total price with null check
+  const getTotalPrice = () => {
+    if (!Array.isArray(cartItems)) return 0;
+    return cartItems.reduce((total, item) => {
+      if (!item?.productId?.price) return total;
+      return total + (item.productId.price * (item.quantity || 0));
+    }, 0);
   };
 
   // Fetch cart and wishlist on mount
@@ -219,17 +232,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => {
-      if (!item?.productId?.price) return total;
-      return total + (item.productId.price * item.quantity);
-    }, 0);
   };
 
   const formatPrice = (price: number) => {
