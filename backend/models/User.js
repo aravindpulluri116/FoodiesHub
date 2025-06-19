@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema({
   googleId: {
     type: String,
-    required: true,
-    unique: true
+    unique: true,
+    sparse: true // Allows multiple null values
   },
   email: {
     type: String,
@@ -41,6 +41,9 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Add index for googleId for better query performance
+userSchema.index({ googleId: 1 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 export default User; 
