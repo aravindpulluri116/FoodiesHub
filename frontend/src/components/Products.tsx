@@ -52,8 +52,25 @@ const Products = () => {
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const response = await axios.get(`${config.apiUrl}/products`);
-      return response.data;
+      try {
+        console.log('Fetching products from:', `${config.apiUrl}/api/products`);
+        const response = await axios.get(`${config.apiUrl}/api/products`, {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Products response:', response.data);
+        if (!Array.isArray(response.data)) {
+          console.error('Products response is not an array:', response.data);
+          throw new Error('Invalid products data format');
+        }
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        throw err;
+      }
     },
     staleTime: 0,
     gcTime: 0,
@@ -62,8 +79,8 @@ const Products = () => {
   });
 
   const filteredProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter((product: Product) => product.category === selectedCategory);
+    ? (Array.isArray(products) ? products : [])
+    : (Array.isArray(products) ? products.filter((product: Product) => product.category === selectedCategory) : []);
 
   const handleAddToCart = (product: Product) => {
     addToCart({

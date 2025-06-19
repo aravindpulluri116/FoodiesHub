@@ -39,20 +39,28 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('DEBUG - Connecting to database...');
     await dbConnect();
+    console.log('DEBUG - Database connected successfully');
+    
     if (req.method === 'GET') {
       try {
+        console.log('DEBUG - Fetching products...');
         const products = await Product.find();
-        res.status(200).json(products);
+        console.log('DEBUG - Products found:', products.length);
+        console.log('DEBUG - Setting response headers...');
+        res.setHeader('Content-Type', 'application/json');
+        console.log('DEBUG - Sending JSON response...');
+        return res.status(200).json(products);
       } catch (error) {
         console.error('Error fetching products:', error);
-        res.status(500).json({ message: 'Error fetching products', error: error.message });
+        return res.status(500).json({ message: 'Error fetching products', error: error.message });
       }
     } else {
-      res.status(405).json({ message: 'Method Not Allowed' });
+      return res.status(405).json({ message: 'Method Not Allowed' });
     }
   } catch (err) {
     console.error('Error in dbConnect or handler:', err);
-    res.status(500).json({ message: 'Internal server error', error: err.message });
+    return res.status(500).json({ message: 'Internal server error', error: err.message });
   }
 } 

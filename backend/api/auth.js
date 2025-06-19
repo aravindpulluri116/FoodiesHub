@@ -19,11 +19,15 @@ export default async function handler(req, res) {
   
   const origin = req.headers.origin;
   
+  console.log('DEBUG - Request headers:', req.headers);
+  console.log('DEBUG - Request cookies:', req.headers.cookie);
+  
   // Allow any Vercel domain for now (more permissive)
   if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app'))) {
+    console.log('DEBUG - Setting CORS origin to:', origin);
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    // Fallback to the main frontend URL
+    console.log('DEBUG - Using fallback CORS origin');
     res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   }
   
@@ -194,12 +198,10 @@ export default async function handler(req, res) {
       }
 
       // Create session cookie
-      const sessionToken = Buffer.from(
-        `${user._id}:${Date.now()}`
-      ).toString('base64');
+      const sessionToken = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
       res.setHeader(
         'Set-Cookie',
-        `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=None`
+        `session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=None; Domain=.vercel.app`
       );
 
       // Redirect back to your frontend
