@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
     console.log('DEBUG - Using fallback CORS origin');
-    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');

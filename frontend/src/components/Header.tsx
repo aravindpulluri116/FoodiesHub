@@ -56,8 +56,8 @@ const Header = () => {
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear user state even if logout fails
-      setUser(null);
-      window.location.reload();
+    setUser(null);
+    window.location.reload();
     }
   };
 
