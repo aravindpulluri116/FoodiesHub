@@ -1,4 +1,5 @@
 {
+  "description": "Vercel configuration for API routing",
   "functions": {
     "backend/api/**/*.js": {
       "runtime": "nodejs18.x"
