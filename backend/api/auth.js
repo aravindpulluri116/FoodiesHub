@@ -8,21 +8,29 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'https://foodieshub-two.vercel.
 const BACKEND_URL  = process.env.BACKEND_URL || 'https://foodieshubbackend.vercel.app';
 
 export default async function handler(req, res) {
-  // 1) CORS headers - allow multiple origins
+  // 1) CORS headers - more permissive approach
   const allowedOrigins = [
     'https://foodieshub-two.vercel.app',
     'https://foodieshub-gf03ozif6-aravind-pulluris-projects.vercel.app',
-    'http://localhost:5173'
+    'https://foodieshub.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
   ];
   
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  
+  // Allow any Vercel domain for now (more permissive)
+  if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app'))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Fallback to the main frontend URL
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
 
   // Handle preflight
   if (req.method === 'OPTIONS') {
@@ -39,7 +47,7 @@ export default async function handler(req, res) {
   const segments = urlNoQuery.split('/').filter(Boolean);
   const route = segments.length === 0 ? '/' : `/${segments.join('/')}`;
 
-  console.log('DEBUG req.url:', req.url, 'route:', route);
+  console.log('DEBUG req.url:', req.url, 'route:', route, 'origin:', origin);
 
   // 2) /api/auth           → GET
   if (route === '/' && req.method === 'GET') {
