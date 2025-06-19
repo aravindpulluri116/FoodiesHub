@@ -167,7 +167,7 @@ const Header = () => {
               </>
             ) : (
               <a
-                href={`${config.apiBaseUrl}/api/auth/google`}
+                href={`${import.meta.env.VITE_API_URL}/api/auth/google`}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
               >
                 Login with Google
@@ -291,7 +291,7 @@ const Header = () => {
                   </div>
                 ) : (
                   <a
-                    href={`${config.apiBaseUrl}/api/auth/google`}
+                    href={`${import.meta.env.VITE_API_URL}/api/auth/google`}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
                   >
                     Login with Google

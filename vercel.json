@@ -23,5 +23,8 @@
       "src": "/(.*)",
       "dest": "frontend/$1"
     }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/backend/api/$1.js" }
   ]
 } 
