@@ -40,21 +40,29 @@ export default async function handler(req, res) {
   // Simplified path parsing
   const url = req.url || '';
   console.log('DEBUG - Full URL:', url);
+  console.log('DEBUG - Request URL:', req.url);
+  console.log('DEBUG - Request path:', req.url?.split('?')[0]);
   
   // Extract the path after /api/auth
   let path = '';
   if (url.includes('/api/auth/')) {
     path = url.split('/api/auth/')[1] || '';
+    console.log('DEBUG - Found /api/auth/ in URL, extracted path:', path);
   } else if (url.includes('/api/auth')) {
     path = '';
+    console.log('DEBUG - Found /api/auth in URL (no trailing slash)');
+  } else {
+    console.log('DEBUG - No /api/auth found in URL');
   }
   
   // Remove query parameters
   path = path.split('?')[0];
   
-  console.log('DEBUG - Extracted path:', path);
+  console.log('DEBUG - Final extracted path:', path);
   console.log('DEBUG - Method:', req.method);
   console.log('DEBUG - Origin:', origin);
+  console.log('DEBUG - Path === "me":', path === 'me');
+  console.log('DEBUG - Method === "GET":', req.method === 'GET');
 
   // Route matching
   if (path === '' && req.method === 'GET') {
