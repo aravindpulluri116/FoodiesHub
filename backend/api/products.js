@@ -2,7 +2,7 @@ import dbConnect from '../db.js';
 import Product from '../models/Product.js';
 
 export default async function handler(req, res) {
-  // 1) CORS headers - flexible approach
+  // 1) CORS headers - flexible approach (updated for all Vercel domains)
   const allowedOrigins = [
     'https://foodieshub-two.vercel.app',
     'https://foodieshub-gf03ozif6-aravind-pulluris-projects.vercel.app',
