@@ -13,11 +13,15 @@ export default async function handler(req, res) {
   ];
   
   const origin = req.headers.origin;
+  console.log('DEBUG - Request origin:', origin);
+  console.log('DEBUG - Allowed origins:', allowedOrigins);
   
   // Allow any Vercel domain for now (more permissive)
   if (origin && (allowedOrigins.includes(origin) || origin.includes('vercel.app'))) {
+    console.log('DEBUG - Setting CORS origin to:', origin);
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
+    console.log('DEBUG - Using fallback CORS origin');
     // Fallback to the main frontend URL
     res.setHeader('Access-Control-Allow-Origin', 'https://foodieshub-two.vercel.app');
   }
@@ -29,6 +33,7 @@ export default async function handler(req, res) {
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('DEBUG - Handling OPTIONS preflight request');
     res.status(200).end();
     return;
   }
