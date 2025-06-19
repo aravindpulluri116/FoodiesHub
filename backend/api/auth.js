@@ -37,40 +37,56 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Robust path parsing
-  let urlPath = req.url;
-  const idx = urlPath.lastIndexOf('/api/auth');
-  if (idx !== -1) {
-    urlPath = urlPath.slice(idx + '/api/auth'.length) || '/';
+  // Simplified path parsing
+  const url = req.url || '';
+  console.log('DEBUG - Full URL:', url);
+  
+  // Extract the path after /api/auth
+  let path = '';
+  if (url.includes('/api/auth/')) {
+    path = url.split('/api/auth/')[1] || '';
+  } else if (url.includes('/api/auth')) {
+    path = '';
   }
-  const urlNoQuery = urlPath.split('?')[0];
-  const segments = urlNoQuery.split('/').filter(Boolean);
-  const route = segments.length === 0 ? '/' : `/${segments.join('/')}`;
+  
+  // Remove query parameters
+  path = path.split('?')[0];
+  
+  console.log('DEBUG - Extracted path:', path);
+  console.log('DEBUG - Method:', req.method);
+  console.log('DEBUG - Origin:', origin);
 
-  console.log('DEBUG req.url:', req.url, 'route:', route, 'origin:', origin);
-
-  // 2) /api/auth           → GET
-  if (route === '/' && req.method === 'GET') {
-    return res.status(404).json({ message: 'Not found', route, method: req.method });
+  // Route matching
+  if (path === '' && req.method === 'GET') {
+    // /api/auth
+    return res.status(404).json({ message: 'Not found', path, method: req.method });
   }
 
-  // 3) /api/auth/me        → GET
-  if (route === '/me' && req.method === 'GET') {
+  if (path === 'me' && req.method === 'GET') {
+    // /api/auth/me
+    console.log('DEBUG - /me route matched');
     try {
       await dbConnect();
       const sessionCookie = req.headers.cookie
         ?.split(';')
         .find(c => c.trim().startsWith('session='));
-      if (!sessionCookie) 
+      if (!sessionCookie) {
+        console.log('DEBUG - No session cookie found');
         return res.status(401).json({ message: 'Not authenticated' });
+      }
 
       const sessionToken = sessionCookie.split('=')[1];
       const decoded = Buffer.from(sessionToken, 'base64').toString();
       const [userId] = decoded.split(':');
+      console.log('DEBUG - User ID from session:', userId);
+      
       const user = await User.findById(userId).select('-__v');
-      if (!user) 
+      if (!user) {
+        console.log('DEBUG - User not found in database');
         return res.status(401).json({ message: 'User not found' });
+      }
 
+      console.log('DEBUG - User found:', user.email);
       return res.status(200).json(user);
     } catch (err) {
       console.error('Error in /auth/me:', err);
@@ -78,8 +94,9 @@ export default async function handler(req, res) {
     }
   }
 
-  // 4) /api/auth/logout    → GET
-  if (route === '/logout' && req.method === 'GET') {
+  if (path === 'logout' && req.method === 'GET') {
+    // /api/auth/logout
+    console.log('DEBUG - /logout route matched');
     res.setHeader(
       'Set-Cookie',
       'session=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0'
@@ -87,15 +104,15 @@ export default async function handler(req, res) {
     return res.redirect(FRONTEND_URL);
   }
 
-  // 5) TEST /api/auth/google → GET
-  //    (quick test endpoint)
-  if (route === '/google-test' && req.method === 'GET') {
+  if (path === 'google-test' && req.method === 'GET') {
+    // /api/auth/google-test
+    console.log('DEBUG - /google-test route matched');
     return res.send('✅ /api/auth/google-test route is working!');
   }
 
-  // 6) /api/auth/google    → GET
-  if (route === '/google' && req.method === 'GET') {
-    console.log('=== GOOGLE OAUTH ROUTE MATCHED ===');
+  if (path === 'google' && req.method === 'GET') {
+    // /api/auth/google
+    console.log('DEBUG - /google route matched');
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Google OAuth env vars missing');
       return res
@@ -117,8 +134,9 @@ export default async function handler(req, res) {
     return res.redirect(googleAuthUrl);
   }
 
-  // 7) /api/auth/google/callback → GET
-  if (route === '/google/callback' && req.method === 'GET') {
+  if (path === 'google/callback' && req.method === 'GET') {
+    // /api/auth/google/callback
+    console.log('DEBUG - /google/callback route matched');
     try {
       await dbConnect();
 
@@ -184,11 +202,13 @@ export default async function handler(req, res) {
     }
   }
 
-  // 8) Catch-all Not Found
+  // Catch-all Not Found
+  console.log('DEBUG - No route matched, returning 404');
   return res.status(404).json({
     message: 'Not found',
-    route,
-    method: req.method
+    path,
+    method: req.method,
+    url: req.url
   });
 }
   
