@@ -17,9 +17,6 @@
     }
   ],
   "env": {
-    "MONGODB_URI":  "mongodb+srv://aravindpulluri:aravind116@aravindpulluri.h1xmcos.mongodb.net/foodies",
-    "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET",
     "FRONTEND_URL": "https://foodieshub-two.vercel.app",
     "BACKEND_URL": "https://foodieshubbackend.vercel.app"
   }
