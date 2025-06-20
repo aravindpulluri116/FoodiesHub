@@ -343,9 +343,9 @@ const retryPayment = async (req, res) => {
 };
 
 module.exports = {
+    isAuthenticated,
     createOrder,
     verifyPayment,
     handleWebhook,
-    isAuthenticated,
     retryPayment
 }; 
