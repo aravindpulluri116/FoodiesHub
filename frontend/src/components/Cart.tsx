@@ -4,7 +4,6 @@ import { ShoppingCart, X, Plus, Minus, Heart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CheckoutForm from './CheckoutForm';
 import { config } from '../config';
 
@@ -19,7 +18,6 @@ const Cart = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'cart' | 'wishlist'>('cart');
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const { 
     cartItems, 
     wishlistItems, 
@@ -226,21 +224,6 @@ const Cart = () => {
           </div>
         </div>
       )}
-
-      {/* Checkout Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-4xl">
-          <CheckoutForm
-            totalAmount={getTotalPrice()}
-            items={cartItems.map(item => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              price: item.price
-            }))}
-            onClose={() => setCheckoutOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
