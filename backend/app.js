@@ -9,11 +9,11 @@ const MongoStore = require('connect-mongo');
 const app = express();
 
 const allowedOrigins = [
-  'https://foodieshub-two.vercel.app',
-  process.env.FRONTEND_URL, // Also allow from env
-  'http://localhost:5173', // For local dev
-  'http://localhost:3000' // For local dev
-].filter(Boolean); // Filter out any undefined/null values
+  'https://foodieshub-two.vercel.app', // Production frontend
+  process.env.FRONTEND_URL, // From env
+  'http://localhost:5173', // Local dev
+  'http://localhost:3000'  // Local dev
+].filter(Boolean);
 
 // Trust the first proxy
 app.set('trust proxy', 1);
@@ -23,13 +23,23 @@ app.use(express.json());
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-        return callback(new Error(msg), false);
+
+      const isAllowed = allowedOrigins.some(allowedOrigin => {
+        // Handle regex in allowedOrigins
+        if (allowedOrigin.startsWith('regex:')) {
+          const regex = new RegExp(allowedOrigin.substring(6));
+          return regex.test(origin);
+        }
+        return origin === allowedOrigin;
+      });
+
+      if (isAllowed || (process.env.NODE_ENV !== 'production' && origin.endsWith('.vercel.app'))) {
+        return callback(null, true);
       }
-      return callback(null, true);
+
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
     },
     credentials: true,
   })

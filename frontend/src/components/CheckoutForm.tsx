@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+wimport React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
+  const [cashfree, setCashfree] = useState<any>(null);
   
   // Address form state
   const [formData, setFormData] = useState({
@@ -42,6 +43,27 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
     pincode: '',
     additionalInfo: ''
   });
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = config.cashfreeSdkUrl;
+    script.async = true;
+    script.onload = () => {
+      if (window.Cashfree) {
+        setCashfree(window.Cashfree({
+          mode: 'sandbox' // or 'production'
+        }));
+      }
+    };
+    document.body.appendChild(script);
+    return () => {
+      // Clean up script on unmount
+      const existingScript = document.querySelector(`script[src="${config.cashfreeSdkUrl}"]`);
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -70,6 +92,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
     e.preventDefault();
     
     if (!validateForm()) return;
+
+    if (paymentMethod === 'online' && !cashfree) {
+      toast({
+        title: "Payment gateway not ready",
+        description: "The payment gateway is still loading. Please try again in a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -101,7 +132,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
 
         if (response.data.success) {
           const { payment_session_id } = response.data.data;
-          window.Cashfree.checkout({
+          cashfree.checkout({
             paymentSessionId: payment_session_id,
             redirectTarget: "_self"
           });
@@ -271,7 +302,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
             <Button
               type="submit"
               className="bg-orange-600 hover:bg-orange-700"
-              disabled={loading}
+              disabled={loading || (paymentMethod === 'online' && !cashfree)}
             >
               {loading ? 'Processing...' : paymentMethod === 'cod' ? 'Place Order' : 'Pay Now'}
             </Button>

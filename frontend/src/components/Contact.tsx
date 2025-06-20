@@ -48,7 +48,7 @@ const Contact = () => {
             >
               Chat on WhatsApp
             </button>
-            <p className="text-sm text-gray-500 mt-3">+91 88861 13939</p>
+            <p className="text-sm text-gray-500 mt-3">+91 88861 13839</p>
           </div>
 
           {/* Phone Card */}
@@ -66,7 +66,7 @@ const Contact = () => {
             >
               Call Now
             </button>
-            <p className="text-sm text-gray-500 mt-3">+91 88861 13939</p>
+            <p className="text-sm text-gray-500 mt-3">+91 88861 13839</p>
           </div>
         </div>
 

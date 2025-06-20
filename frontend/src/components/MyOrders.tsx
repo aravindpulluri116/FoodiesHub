@@ -61,9 +61,30 @@ const MyOrders = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [cashfree, setCashfree] = useState<any>(null);
 
   useEffect(() => {
     fetchOrders();
+    
+    const script = document.createElement('script');
+    script.src = config.cashfreeSdkUrl;
+    script.async = true;
+    script.onload = () => {
+      if (window.Cashfree) {
+        setCashfree(window.Cashfree({
+          mode: 'sandbox' // or 'production'
+        }));
+      }
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      // Clean up script on unmount
+      const existingScript = document.querySelector(`script[src="${config.cashfreeSdkUrl}"]`);
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
   }, []);
 
   const fetchOrders = async () => {
@@ -112,6 +133,15 @@ const MyOrders = () => {
   };
 
   const handlePayNow = async (orderId: string) => {
+    if (!cashfree) {
+      toast({
+        title: "Payment gateway not ready",
+        description: "The payment gateway is still loading. Please try again in a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setProcessingPayment(true);
       const order = orders.find(o => o._id === orderId);
@@ -132,7 +162,7 @@ const MyOrders = () => {
       if (response.data.success) {
         const { payment_session_id } = response.data.data;
         // Launch Cashfree checkout
-        window.Cashfree.checkout({
+        cashfree.checkout({
           paymentSessionId: payment_session_id,
           redirectTarget: "_self"
         });
@@ -249,7 +279,7 @@ const MyOrders = () => {
                     <Button
                       onClick={() => handlePayNow(order._id)}
                       className="bg-orange-600 hover:bg-orange-700"
-                      disabled={processingPayment}
+                      disabled={processingPayment || !cashfree}
                     >
                       {processingPayment ? 'Processing...' : 'Pay Now'}
                     </Button>

@@ -40,6 +40,7 @@ const Checkout = () => {
     paymentMethod: 'online' // Default to online payment
   });
   const [loading, setLoading] = useState(false);
+  const [cashfree, setCashfree] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -48,6 +49,13 @@ const Checkout = () => {
     const script = document.createElement('script');
     script.src = config.cashfreeSdkUrl;
     script.async = true;
+    script.onload = () => {
+      if (window.Cashfree) {
+        setCashfree(window.Cashfree({
+          mode: 'sandbox' // or 'production'
+        }));
+      }
+    };
     document.body.appendChild(script);
     return () => {
       document.body.removeChild(script);
@@ -77,6 +85,16 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (formData.paymentMethod === 'online' && !cashfree) {
+      toast({
+        title: "Payment gateway not ready",
+        description: "The payment gateway is still loading. Please try again in a moment.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const deliveryAddress = `${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}`;
@@ -108,26 +126,10 @@ const Checkout = () => {
 
         if (response.data.success) {
           const { payment_session_id } = response.data.data;
-          // Launch Cashfree checkout without Sentry
-          window.Cashfree.checkout({
+          // Launch Cashfree checkout
+          cashfree.checkout({
             paymentSessionId: payment_session_id,
-            redirectTarget: "_self",
-            environment: "sandbox", // or "production" for live environment
-            onSuccess: (data: any) => {
-              console.log('Payment successful:', data);
-              navigate('/orders');
-            },
-            onFailure: (data: any) => {
-              console.error('Payment failed:', data);
-              toast({
-                title: "Payment Failed",
-                description: "Your payment could not be processed. Please try again.",
-                variant: "destructive"
-              });
-            },
-            onClose: () => {
-              console.log('Payment window closed');
-            }
+            redirectTarget: "_self"
           });
         }
       }
@@ -260,7 +262,7 @@ const Checkout = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || (formData.paymentMethod === 'online' && !cashfree)}
             >
               {loading ? 'Processing...' : 'Place Order'}
             </Button>
