@@ -243,26 +243,42 @@ const MyOrders = () => {
                   <p className="text-sm text-gray-600">{order.address}</p>
                 </div>
 
-                <div className="mt-4 flex justify-between items-center border-t pt-4">
-                  <span className="text-lg font-bold">
-                    Total: ₹{order.totalAmount.toFixed(2)}
-                  </span>
-                  <div className="flex space-x-2">
-                    {/* Show "Pay Now" for pending online orders OR placed COD orders */}
-                    {((order.payment?.method === 'online' && order.status === 'pending') ||
-                      (order.payment?.method === 'cash_on_delivery' && order.status === 'placed')) &&
-                      order.status !== 'cancelled' && (
-                      <Button onClick={() => handlePayNow(order._id)} disabled={processingPayment}>
-                        {processingPayment ? 'Processing...' : 'Pay Now'}
-                      </Button>
-                    )}
+                <div className="mt-4 flex flex-col space-y-4 border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Payment:</span>
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                      order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.payment?.method === 'cash_on_delivery' ? 'bg-gray-200 text-gray-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.payment?.status === 'completed' ? 'Paid' : order.payment?.method === 'cash_on_delivery' ? 'Cash on Delivery' : 'Pending'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold">
+                      Total: ₹{order.totalAmount.toFixed(2)}
+                    </span>
+                    <div className="flex space-x-2">
+                      {/* Show "Pay Now" for pending online orders OR placed COD orders */}
+                      {((order.payment?.method === 'online' && order.status === 'pending') ||
+                        (order.payment?.method === 'cash_on_delivery' && order.status === 'placed')) &&
+                        order.status !== 'cancelled' && (
+                        <Button 
+                          onClick={() => handlePayNow(order._id)} 
+                          disabled={processingPayment}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          {processingPayment ? 'Processing...' : 'Pay Now'}
+                        </Button>
+                      )}
 
-                    {/* Show "Cancel" only for pending orders */}
-                    {order.status === 'pending' && (
-                      <Button variant="destructive" onClick={() => handleCancelClick(order._id)}>
-                        Cancel Order
-                      </Button>
-                    )}
+                      {/* Show "Cancel" only for pending orders */}
+                      {order.status === 'pending' && (
+                        <Button variant="destructive" onClick={() => handleCancelClick(order._id)}>
+                          Cancel Order
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
