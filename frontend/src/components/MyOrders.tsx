@@ -261,8 +261,7 @@ const MyOrders = () => {
                     <div className="flex space-x-2">
                       {/* Show "Pay Now" for pending online orders OR placed COD orders */}
                       {((order.payment?.method === 'online' && order.status === 'pending') ||
-                        (order.payment?.method === 'cash_on_delivery' && order.status === 'placed')) &&
-                        order.status !== 'cancelled' && (
+                        (order.payment?.method === 'cash_on_delivery' && order.status === 'placed')) && (
                         <Button 
                           onClick={() => handlePayNow(order._id)} 
                           disabled={processingPayment}
