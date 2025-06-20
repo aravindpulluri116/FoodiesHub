@@ -152,13 +152,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           description: `${product.name} has been added to your cart.`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding to cart:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart. Please try again.",
-        variant: "destructive",
-      });
+      if (error.response && error.response.status === 401) {
+        toast({
+          title: "Authentication Error",
+          description: "Please login to add items to your cart.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add item to cart. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

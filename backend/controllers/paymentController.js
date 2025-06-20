@@ -1,6 +1,7 @@
 const { Cashfree } = require("cashfree-pg");
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Product = require('../models/Product');
 
 // Initialize Cashfree
 const cashfree = new Cashfree(
@@ -19,7 +20,7 @@ const isAuthenticated = (req, res, next) => {
 
 const createOrder = async (req, res) => {
     try {
-        const { items, deliveryAddress, totalAmount, paymentMethod } = req.body;
+        const { items, deliveryAddress, phone } = req.body;
 
         // Validate request body
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -35,20 +36,31 @@ const createOrder = async (req, res) => {
                 message: "Delivery address is required"
             });
         }
+        
+        // Securely calculate total amount on the server
+        const productIds = items.map(item => item.productId);
+        const products = await Product.find({ '_id': { $in: productIds } });
 
-        if (!totalAmount) {
-            return res.status(400).json({
-                success: false,
-                message: "Total amount is required"
-            });
-        }
+        const priceMap = products.reduce((map, product) => {
+            map[product._id.toString()] = product.price;
+            return map;
+        }, {});
 
-        if (!paymentMethod || !['cash_on_delivery', 'online'].includes(paymentMethod)) {
-            return res.status(400).json({
-                success: false,
-                message: "Valid payment method is required"
-            });
-        }
+        let totalAmount = 0;
+        const orderItems = items.map(item => {
+            const price = priceMap[item.productId];
+            if (price === undefined) {
+                throw new Error(`Product with ID ${item.productId} not found or price is missing.`);
+            }
+            totalAmount += price * item.quantity;
+            if (!item.quantity) {
+                throw new Error("Invalid item structure: quantity is missing");
+            }
+            return {
+                product: item.productId,
+                quantity: item.quantity
+            };
+        });
 
         // Get user from request
         const user = await User.findById(req.user._id);
@@ -59,16 +71,11 @@ const createOrder = async (req, res) => {
             });
         }
 
-        // Transform items to match Order schema
-        const orderItems = items.map(item => {
-            if (!item.productId || !item.quantity) {
-                throw new Error("Invalid item structure");
-            }
-            return {
-                product: item.productId,
-                quantity: item.quantity
-            };
-        });
+        // Optionally, update user's phone number if provided
+        if (phone && user.phone !== phone) {
+            user.phone = phone;
+            await user.save();
+        }
 
         // Create order in your database
         const order = await Order.create({
@@ -78,22 +85,10 @@ const createOrder = async (req, res) => {
             status: 'pending',
             user: user._id,
             payment: {
-                method: paymentMethod,
+                method: 'online',
                 status: 'pending'
             }
         });
-
-        // If payment method is cash on delivery, return success
-        if (paymentMethod === 'cash_on_delivery') {
-            return res.status(200).json({
-                success: true,
-                message: "Order created successfully",
-                data: {
-                    orderId: order._id,
-                    paymentMethod: 'cash_on_delivery'
-                }
-            });
-        }
 
         // Create payment order with Cashfree for online payment
         const orderRequest = {
@@ -104,7 +99,7 @@ const createOrder = async (req, res) => {
                 customer_id: user._id.toString(),
                 customer_name: user.name,
                 customer_email: user.email,
-                customer_phone: user.phone || "9999999999"
+                customer_phone: user.phone || phone || "9999999999"
             },
             order_meta: {
                 return_url: `${process.env.FRONTEND_URL}/payment/result?order_id=${order._id}`

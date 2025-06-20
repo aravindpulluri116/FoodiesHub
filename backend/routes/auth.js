@@ -9,6 +9,7 @@ router.get('/me', (req, res) => {
       id: req.user._id,
       name: req.user.name,
       email: req.user.email,
+      phone: req.user.phone,
       picture: req.user.picture,
       isAdmin: req.user.isAdmin
     });

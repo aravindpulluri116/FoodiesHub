@@ -45,6 +45,25 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
   });
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get('/auth/me'); // Assuming you have an endpoint to get user data
+        if (response.data) {
+          const { name, email, phone } = response.data;
+          setFormData(prev => ({
+            ...prev,
+            fullName: name || '',
+            email: email || '',
+            phone: phone || ''
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data", error);
+        // Handle not being logged in, maybe redirect
+      }
+    };
+    fetchUserData();
+
     const script = document.createElement('script');
     script.src = config.cashfreeSdkUrl;
     script.async = true;
@@ -127,7 +146,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
         const response = await api.post('/payments/create-order', {
           items,
           deliveryAddress: address,
-          totalAmount: totalAmount.toString()
+          phone: formData.phone
         });
 
         if (response.data.success) {
