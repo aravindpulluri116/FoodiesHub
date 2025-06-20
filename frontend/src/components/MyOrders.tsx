@@ -248,7 +248,7 @@ const MyOrders = () => {
                     Total: ₹{order.totalAmount.toFixed(2)}
                   </span>
                   <div className="flex space-x-2">
-                    {order.payment?.method === 'online' && (order.payment?.status === 'pending' || order.payment?.status === 'failed') && order.status !== 'cancelled' && (
+                    {order.payment?.method === 'online' && order.payment?.status !== 'completed' && order.status !== 'cancelled' && (
                       <Button onClick={() => handlePayNow(order._id)} disabled={processingPayment}>
                         {processingPayment ? 'Processing...' : 'Pay Now'}
                       </Button>
