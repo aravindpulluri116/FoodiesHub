@@ -303,7 +303,7 @@ const retryPayment = async (req, res) => {
         }
 
         const orderRequest = {
-            order_id: order._id.toString(),
+            order_id: `${order._id.toString()}_${Date.now()}`,
             order_amount: order.totalAmount,
             order_currency: "INR",
             customer_details: {
@@ -319,7 +319,7 @@ const retryPayment = async (req, res) => {
 
         const response = await cashfree.PGCreateOrder(orderRequest);
         
-        await order.updatePaymentStatus('pending', response.data.order_id, {
+        await order.updatePaymentStatus('pending', order._id.toString(), {
             payment_session_id: response.data.payment_session_id,
             order_id: response.data.order_id
         });
