@@ -60,7 +60,11 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // Initialize cartItems from localStorage if available
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const stored = localStorage.getItem('cart');
+    return stored ? JSON.parse(stored) : [];
+  });
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -70,6 +74,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!item?.productId?.price) return total;
     return total + (item.productId.price * (item.quantity || 0));
   }, 0) : 0;
+
+  // Sync cartItems to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Fetch cart items
   const fetchCart = async () => {
@@ -243,6 +252,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.delete('/cart/clear');
       if (response.data) {
         setCartItems([]);
+        localStorage.removeItem('cart');
         toast({
           title: "Cart Cleared",
           description: "Your cart has been cleared.",
