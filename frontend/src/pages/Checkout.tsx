@@ -126,11 +126,27 @@ const Checkout = () => {
 
         if (response.data.success) {
           const { payment_session_id } = response.data.data;
-          // Launch Cashfree checkout
+          console.log('Payment session ID:', payment_session_id);
+          if (!payment_session_id) {
+            toast({
+              title: "Payment Error",
+              description: "Payment session ID is missing. Please try again.",
+              variant: "destructive"
+            });
+            setLoading(false);
+            return;
+          }
           cashfree.checkout({
             paymentSessionId: payment_session_id,
             redirectTarget: "_self"
           });
+        } else {
+          toast({
+            title: "Payment Error",
+            description: response.data.message || "Failed to create payment session.",
+            variant: "destructive"
+          });
+          setLoading(false);
         }
       }
     } catch (error: any) {
