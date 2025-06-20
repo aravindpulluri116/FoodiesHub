@@ -8,11 +8,14 @@ const MongoStore = require('connect-mongo');
 
 const app = express();
 
+// Trust the first proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(
   cors({
-    origin: 'https://foodieshub-two.vercel.app',
+    origin: process.env.FRONTEND_URL || 'https://foodieshub-two.vercel.app',
     credentials: true,
   })
 );
@@ -25,8 +28,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
+      maxAge: 24 * 60 * 60 * 1000
     },
   })
 );
