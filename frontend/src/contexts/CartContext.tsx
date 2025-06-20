@@ -22,23 +22,20 @@ interface Product {
 }
 
 interface CartItem {
-  productId: {
-    _id: string;
-    name: string;
-    price: number;
-    image: string;
-  };
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
   quantity: number;
+  _id: string;
 }
 
 interface WishlistItem {
   _id: string;
-  productId: {
-    _id: string;
-    name: string;
-    price: number;
-    image: string;
-  };
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
 }
 
 interface CartContextType {
@@ -71,8 +68,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Calculate total amount with null checks
   const totalAmount = Array.isArray(cartItems) ? cartItems.reduce((total, item) => {
-    if (!item?.productId?.price) return total;
-    return total + (item.productId.price * (item.quantity || 0));
+    if (!item?.price) return total;
+    return total + (item.price * (item.quantity || 0));
   }, 0) : 0;
 
   // Sync cartItems to localStorage whenever they change
@@ -105,7 +102,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Check if item is in wishlist with null check
   const isInWishlist = (productId: string) => {
     if (!Array.isArray(wishlistItems)) return false;
-    return wishlistItems.some(item => item?.productId?._id === productId);
+    return wishlistItems.some(item => item?.productId === productId);
   };
 
   // Get total items with null check
@@ -118,8 +115,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getTotalPrice = () => {
     if (!Array.isArray(cartItems)) return 0;
     return cartItems.reduce((total, item) => {
-      if (!item?.productId?.price) return total;
-      return total + (item.productId.price * (item.quantity || 0));
+      if (!item?.price) return total;
+      return total + (item.price * (item.quantity || 0));
     }, 0);
   };
 

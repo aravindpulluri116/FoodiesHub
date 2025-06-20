@@ -46,7 +46,7 @@ const Cart = () => {
 
   const handleOpenCheckout = () => {
     setIsOpen(false);
-    navigate('/checkout');
+    setCheckoutOpen(true);
   };
 
   const handleWhatsAppClick = () => {
@@ -105,29 +105,29 @@ const Cart = () => {
                   ) : (
                     <div className="space-y-4">
                       {cartItems.filter(item => item?.productId).map(item => (
-                        <Card key={item.productId._id}>
+                        <Card key={item.productId}>
                           <CardContent className="p-4">
                             <div className="flex items-start space-x-4">
                               <img
-                                src={item.productId.image}
-                                alt={item.productId.name}
+                                src={item.image}
+                                alt={item.name}
                                 className="w-20 h-20 object-cover rounded"
                               />
                               <div className="flex-1">
-                                <h3 className="font-medium">{item.productId.name}</h3>
+                                <h3 className="font-medium">{item.name}</h3>
                                 <p className="text-sm text-gray-600">
-                                  ₹{formatPrice(item.productId.price)}
+                                  ₹{formatPrice(item.price)}
                                 </p>
                                 <div className="flex items-center space-x-2 mt-2">
                                   <button
-                                    onClick={() => updateQuantity(item.productId._id, item.quantity - 1)}
+                                    onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                                     className="p-1 rounded-full hover:bg-gray-100"
                                   >
                                     <Minus size={16} />
                                   </button>
                                   <span>{item.quantity}</span>
                                   <button
-                                    onClick={() => updateQuantity(item.productId._id, item.quantity + 1)}
+                                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                                     className="p-1 rounded-full hover:bg-gray-100"
                                   >
                                     <Plus size={16} />
@@ -135,7 +135,7 @@ const Cart = () => {
                                 </div>
                               </div>
                               <button
-                                onClick={() => removeFromCart(item.productId._id)}
+                                onClick={() => removeFromCart(item.productId)}
                                 className="text-gray-400 hover:text-red-500"
                               >
                                 <X size={20} />
@@ -156,7 +156,7 @@ const Cart = () => {
                   ) : (
                     <div className="space-y-4">
                       {wishlistItems.map(item => (
-                        <Card key={item._id}>
+                        <Card key={item.productId}>
                           <CardContent className="p-4">
                             <div className="flex items-start space-x-4">
                               <img
@@ -173,8 +173,16 @@ const Cart = () => {
                                   <Button
                                     size="sm"
                                     onClick={() => {
-                                      addToCart(item);
-                                      removeFromWishlist(item._id);
+                                      addToCart({ 
+                                        _id: item.productId, 
+                                        name: item.name, 
+                                        price: item.price, 
+                                        image: item.image,
+                                        // These fields are not in WishlistItem, so provide defaults or fetch them
+                                        description: ' ', 
+                                        category: ' ' 
+                                      });
+                                      removeFromWishlist(item.productId);
                                     }}
                                   >
                                     Add to Cart
@@ -182,7 +190,7 @@ const Cart = () => {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => removeFromWishlist(item._id)}
+                                    onClick={() => removeFromWishlist(item.productId)}
                                   >
                                     Remove
                                   </Button>
@@ -225,9 +233,9 @@ const Cart = () => {
           <CheckoutForm
             totalAmount={getTotalPrice()}
             items={cartItems.map(item => ({
-              productId: item.productId._id,
+              productId: item.productId,
               quantity: item.quantity,
-              price: item.productId.price
+              price: item.price
             }))}
             onClose={() => setCheckoutOpen(false)}
           />

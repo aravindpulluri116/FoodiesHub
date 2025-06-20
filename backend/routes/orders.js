@@ -45,6 +45,7 @@ router.post('/', isAuthenticated, async (req, res) => {
     const orderItems = items.map(item => {
       const price = priceMap[item.productId];
       if (price === undefined) {
+        console.error(`Product with ID ${item.productId} not found in the database or has no price.`);
         throw new Error(`Product with ID ${item.productId} not found or price is missing.`);
       }
       totalAmount += price * item.quantity;

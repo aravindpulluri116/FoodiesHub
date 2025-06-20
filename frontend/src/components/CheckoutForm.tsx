@@ -130,7 +130,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
         const response = await api.post('/orders', {
           items,
           address,
-          totalAmount: totalAmount.toString()
         });
 
         if (response.data) {

@@ -20,7 +20,15 @@ router.get('/', isAuthenticated, async (req, res) => {
       console.log('User not found');
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user.cart);
+    const formattedCart = user.cart.map(item => ({
+      productId: item.productId._id,
+      quantity: item.quantity,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      _id: item._id
+    }));
+    res.json(formattedCart);
   } catch (error) {
     console.error('Get cart error:', error);
     res.status(500).json({ message: error.message });
@@ -81,7 +89,15 @@ router.post('/add', isAuthenticated, async (req, res) => {
     const updatedUser = await User.findById(req.user._id).populate('cart.productId');
     console.log('Updated cart:', updatedUser.cart);
     
-    res.json(updatedUser.cart);
+    const formattedCart = updatedUser.cart.map(item => ({
+      productId: item.productId._id,
+      quantity: item.quantity,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      _id: item._id
+    }));
+    res.json(formattedCart);
   } catch (error) {
     console.error('Add to cart error:', error);
     res.status(500).json({ message: error.message });
@@ -112,7 +128,15 @@ router.put('/update/:productId', isAuthenticated, async (req, res) => {
 
     await user.save();
     const updatedUser = await User.findById(req.user._id).populate('cart.productId');
-    res.json(updatedUser.cart);
+    const formattedCart = updatedUser.cart.map(item => ({
+      productId: item.productId._id,
+      quantity: item.quantity,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      _id: item._id
+    }));
+    res.json(formattedCart);
   } catch (error) {
     console.error('Update cart error:', error);
     res.status(500).json({ message: error.message });
@@ -128,7 +152,15 @@ router.delete('/remove/:productId', isAuthenticated, async (req, res) => {
     );
     await user.save();
     const updatedUser = await User.findById(req.user._id).populate('cart.productId');
-    res.json(updatedUser.cart);
+    const formattedCart = updatedUser.cart.map(item => ({
+      productId: item.productId._id,
+      quantity: item.quantity,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      _id: item._id
+    }));
+    res.json(formattedCart);
   } catch (error) {
     console.error('Remove from cart error:', error);
     res.status(500).json({ message: error.message });

@@ -50,6 +50,7 @@ const createOrder = async (req, res) => {
         const orderItems = items.map(item => {
             const price = priceMap[item.productId];
             if (price === undefined) {
+                console.error(`Product with ID ${item.productId} not found in the database or has no price.`);
                 throw new Error(`Product with ID ${item.productId} not found or price is missing.`);
             }
             totalAmount += price * item.quantity;
@@ -75,6 +76,13 @@ const createOrder = async (req, res) => {
         if (phone && user.phone !== phone) {
             user.phone = phone;
             await user.save();
+        }
+
+        if (totalAmount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Total amount must be greater than zero."
+            });
         }
 
         // Create order in your database
@@ -122,6 +130,9 @@ const createOrder = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating order:', error);
+        if (error.response) {
+            console.error('Cashfree API Error:', error.response.data);
+        }
         res.status(500).json({
             success: false,
             message: error.response?.data?.message || error.message || "Error creating order"
