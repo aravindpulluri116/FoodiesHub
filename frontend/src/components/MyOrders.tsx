@@ -44,7 +44,8 @@ interface Order {
   address: string;
   createdAt: string;
   payment?: {
-    status: 'completed' | 'pending' | 'cancelled';
+    method: 'cash_on_delivery' | 'online';
+    status: 'completed' | 'pending' | 'failed';
   };
 }
 
@@ -53,6 +54,7 @@ interface PaymentResponse {
   data: {
     payment_session_id: string;
   };
+  message?: string;
 }
 
 const MyOrders = () => {
@@ -142,37 +144,23 @@ const MyOrders = () => {
       return;
     }
 
+    setProcessingPayment(true);
     try {
-      setProcessingPayment(true);
-      const order = orders.find(o => o._id === orderId);
-      if (!order) {
-        throw new Error('Order not found');
-      }
-
-      const response = await api.post<PaymentResponse>('/payments/create-order', {
-        items: order.items.map(item => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-          price: item.product.price
-        })),
-        deliveryAddress: order.address,
-        totalAmount: order.totalAmount.toString()
-      });
+      const response = await api.post<PaymentResponse>('/payments/retry-payment', { orderId });
 
       if (response.data.success) {
         const { payment_session_id } = response.data.data;
-        // Launch Cashfree checkout
         cashfree.checkout({
           paymentSessionId: payment_session_id,
           redirectTarget: "_self"
         });
       } else {
-        throw new Error('Failed to create payment');
+        throw new Error(response.data.message || 'Failed to create payment session.');
       }
     } catch (error: any) {
       toast({
         title: "Payment Error",
-        description: error.message || "Failed to process payment. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to process payment. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -236,12 +224,7 @@ const MyOrders = () => {
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <h3 className="font-semibold mb-2">Delivery Address:</h3>
-                  <p className="text-sm text-gray-600">{order.address}</p>
-                </div>
-
-                <div className="mt-4">
+                <div className="mt-4 border-t pt-4">
                   <h3 className="font-semibold mb-2">Items:</h3>
                   <div className="space-y-2">
                     {order.items.map((item, index) => (
@@ -249,48 +232,34 @@ const MyOrders = () => {
                         <span>
                           {item.product?.name || 'Product not available'} x {item.quantity}
                         </span>
-                        <span className="font-medium">
-                          ₹{((item.product?.price || 0) * item.quantity).toFixed(2)}
-                        </span>
+                        <span>₹{(item.product?.price || 0 * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <span className="font-semibold">Total Amount:</span>
-                  <span className="text-lg font-bold text-orange-600">
-                    ₹{order.totalAmount.toFixed(2)}
-                  </span>
+                <div className="mt-4 border-t pt-4">
+                  <h3 className="font-semibold mb-2">Delivery Address:</h3>
+                  <p className="text-sm text-gray-600">{order.address}</p>
                 </div>
 
-                {/* Display Payment Status */}
-                <div className="mt-2 flex items-center">
-                  <span className="font-semibold mr-2">Payment Status: </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {order.payment?.status === 'completed' ? '✓ Paid' : 'Pending'}
+                <div className="mt-4 flex justify-between items-center border-t pt-4">
+                  <span className="text-lg font-bold">
+                    Total: ₹{order.totalAmount.toFixed(2)}
                   </span>
-                </div>
-
-                {order.status === 'pending' && (
-                  <div className="mt-4 flex justify-end space-x-2">
-                    <Button
-                      onClick={() => handlePayNow(order._id)}
-                      className="bg-orange-600 hover:bg-orange-700"
-                      disabled={processingPayment || !cashfree}
-                    >
-                      {processingPayment ? 'Processing...' : 'Pay Now'}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleCancelClick(order._id)}
-                    >
-                      Cancel Order
-                    </Button>
+                  <div className="flex space-x-2">
+                    {order.payment?.method === 'online' && (order.payment?.status === 'pending' || order.payment?.status === 'failed') && order.status !== 'cancelled' && (
+                      <Button onClick={() => handlePayNow(order._id)} disabled={processingPayment}>
+                        {processingPayment ? 'Processing...' : 'Pay Now'}
+                      </Button>
+                    )}
+                    {order.status === 'placed' && (
+                      <Button variant="destructive" onClick={() => handleCancelClick(order._id)}>
+                        Cancel Order
+                      </Button>
+                    )}
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}

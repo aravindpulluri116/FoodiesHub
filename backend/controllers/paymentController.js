@@ -279,9 +279,73 @@ const handleWebhook = async (req, res) => {
     }
 };
 
+const retryPayment = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        if (!orderId) {
+            return res.status(400).json({ success: false, message: "Order ID is required" });
+        }
+
+        const order = await Order.findById(orderId).populate('user');
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        if (order.status === 'completed' || order.status === 'cancelled') {
+            return res.status(400).json({ success: false, message: `Cannot pay for a ${order.status} order.` });
+        }
+
+        const user = order.user;
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User for this order not found" });
+        }
+
+        const orderRequest = {
+            order_id: order._id.toString(),
+            order_amount: order.totalAmount,
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user._id.toString(),
+                customer_name: user.name,
+                customer_email: user.email,
+                customer_phone: user.phone || "9999999999"
+            },
+            order_meta: {
+                return_url: `${process.env.FRONTEND_URL}/payment/result?order_id=${order._id}`
+            }
+        };
+
+        const response = await cashfree.PGCreateOrder(orderRequest);
+        
+        await order.updatePaymentStatus('pending', response.data.order_id, {
+            payment_session_id: response.data.payment_session_id,
+            order_id: response.data.order_id
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Payment session created successfully",
+            data: response.data
+        });
+
+    } catch (error) {
+        console.error('Retry payment error:', error);
+        if (error.response) {
+            console.error('Cashfree API Error:', error.response.data);
+        }
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || error.message || "Error retrying payment"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     verifyPayment,
     handleWebhook,
-    isAuthenticated
+    isAuthenticated,
+    retryPayment
 }; 
