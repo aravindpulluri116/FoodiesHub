@@ -46,7 +46,7 @@ const Cart = () => {
 
   const handleOpenCheckout = () => {
     setIsOpen(false);
-    setCheckoutOpen(true);
+    navigate('/checkout');
   };
 
   const handleWhatsAppClick = () => {
