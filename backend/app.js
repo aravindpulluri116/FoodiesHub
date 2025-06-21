@@ -12,7 +12,8 @@ const allowedOrigins = [
   'https://foodieshub-two.vercel.app', // Production frontend
   process.env.FRONTEND_URL, // From env
   'http://localhost:5173', // Local dev
-  'http://localhost:3000'  // Local dev
+  'http://localhost:3000',
+  'http://localhost:8080',
 ].filter(Boolean);
 
 // Trust the first proxy
