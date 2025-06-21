@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Button } from './ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { config } from '../config';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,8 +73,8 @@ const Header = () => {
               <span className="text-white font-bold text-xl">S</span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Pickles Hub</h1>
-              <p className="text-sm text-gray-600">Homemade with Love</p>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">Pickles Hub</h1>
+              <p className="hidden md:block md:text-sm text-gray-600">Homemade with Love</p>
             </div>
           </Link>
 
@@ -170,7 +172,7 @@ const Header = () => {
                 href={`${config.apiBaseUrl}/api/auth/google`}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
               >
-                Login with Google
+                Login with <FontAwesomeIcon icon={faGoogle} />
               </a>
             )}
           </div>
@@ -196,12 +198,12 @@ const Header = () => {
               className="fixed inset-0 bg-black/50 z-40 md:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
-            <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 relative z-50 bg-white">
+            <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 relative z-50 bg-white rounded-md">
               <div className="flex flex-col space-y-4 pt-4">
                 {location.pathname === '/' ? (
                   <button
                     onClick={() => scrollToSection('home')}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Home size={20} />
                     <span>Home</span>
@@ -210,7 +212,7 @@ const Header = () => {
                   <Link
                     to="/"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Home size={20} />
                     <span>Home</span>
@@ -219,7 +221,7 @@ const Header = () => {
                 {location.pathname === '/' ? (
                   <button
                     onClick={() => scrollToSection('products')}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Package size={20} />
                     <span>Products</span>
@@ -228,7 +230,7 @@ const Header = () => {
                   <Link
                     to="/"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Package size={20} />
                     <span>Products</span>
@@ -237,7 +239,7 @@ const Header = () => {
                 {location.pathname === '/' ? (
                   <button
                     onClick={() => scrollToSection('contact')}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Phone size={20} />
                     <span>Contact</span>
@@ -246,7 +248,7 @@ const Header = () => {
                   <Link
                     to="/"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <Phone size={20} />
                     <span>Contact</span>
@@ -256,7 +258,7 @@ const Header = () => {
                   <Link
                     to="/my-orders"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
+                    className="mx-2 flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors duration-300 p-2"
                   >
                     <ShoppingBag size={20} />
                     <span>My Orders</span>
@@ -284,18 +286,20 @@ const Header = () => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
-                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
+                      className="mx-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
                     >
                       Logout
                     </button>
                   </div>
                 ) : (
-                  <a
+                  <div className='flex justify-center'>
+                    <a
                     href={`${config.apiBaseUrl}/api/auth/google`}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
+                    className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold shadow transition-colors duration-300"
                   >
                     Login with Google
                   </a>
+                  </div>
                 )}
               </div>
             </nav>
