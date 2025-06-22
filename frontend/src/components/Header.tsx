@@ -6,9 +6,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { config } from '../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import { useMenu } from '@/contexts/MenuContext';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  //const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isMenuOpen, setIsMenuOpen } = useMenu();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
@@ -69,9 +71,9 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+            {/* <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xl">S</span>
-            </div>
+            </div> */}
             <div>
               <h1 className="text-xl md:text-sm font-bold text-gray-800">Pickles Hub</h1>
               <p className="hidden lg:block md:text-sm text-gray-600">Homemade with Love</p>
@@ -161,12 +163,7 @@ const Header = () => {
                     </Button>
                   </Link>
                 )}
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold shadow transition-colors duration-300"
-                >
-                  Logout
-                </button>
+                
               </>
             ) : (
               <a
@@ -269,7 +266,7 @@ const Header = () => {
                 {loading ? (
                   <span className="text-gray-500 text-sm">Loading...</span>
                 ) : user ? (
-                  <div className="flex items-center justify-center space-x-2">
+                  <div className="mx-2 p-2 flex items-center space-x-3">
                     {user.picture && (
                       <img src={user.picture} alt="User" className="w-8 h-8 rounded-full mr-2" />
                     )}
