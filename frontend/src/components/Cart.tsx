@@ -44,7 +44,11 @@ const Cart = () => {
 
   const handleOpenCheckout = () => {
     setIsOpen(false);
-    navigate('/checkout');
+    //navigate('/checkout');
+    setTimeout(() => {
+    //navigate('/checkout');
+    window.location.href = '/checkout';
+  }, 100);
   };
 
   const handleWhatsAppClick = () => {
@@ -55,6 +59,7 @@ const Cart = () => {
 
   return (
     <>
+      {getTotalItems()>0 &&
       <button
         onClick={() => setIsOpen(true)}
         className="fixed top-20 right-6 z-50 bg-orange-600 text-white p-3 rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 flex items-center justify-center"
@@ -66,7 +71,7 @@ const Cart = () => {
           </span>
         )}
       </button>
-
+}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
