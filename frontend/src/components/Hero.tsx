@@ -51,7 +51,7 @@ const Hero = () => {
               <img
                 src="/images (1).png"
                 alt="Traditional pickles in wooden bowls"
-                className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
+                className="rounded-2xl shadow-2xl w-full h-[400px] object-contain lg:object-cover"
               />
             </div>
             {/* Decorative elements */}

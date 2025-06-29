@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import CheckoutForm from '@/components/CheckoutForm';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 const CheckoutPage = () => {
   const { cartItems, getTotalPrice } = useCart();
   const navigate = useNavigate();
+  const totalAmount = useMemo(() => getTotalPrice(), [cartItems]);
 
   if (cartItems.length === 0) {
     return (
@@ -21,7 +22,7 @@ const CheckoutPage = () => {
   return (
     <div className="container mx-auto py-12 px-4">
       <CheckoutForm
-        totalAmount={getTotalPrice()}
+        totalAmount={totalAmount}
         items={cartItems.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
