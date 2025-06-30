@@ -171,7 +171,7 @@ const Products = () => {
           {filteredProducts.map((product: Product) => (
             <div
               key={product._id}
-              className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl hover:shadow-[0_8px_32px_rgba(255,140,0,0.25)] transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 border-0 overflow-hidden group"
+              className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl hover:shadow-[0_8px_32px_rgba(255,140,0,0.25)] transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 border-0 overflow-hidden group flex flex-col min-h-[420px]"
             >
               {/* Product Image */}
               <div className="relative overflow-hidden">
@@ -202,8 +202,8 @@ const Products = () => {
               </div>
 
               {/* Product Info */}
-              <div className="p-6 bg-white/90 rounded-b-2xl shadow-lg border border-gray-100 flex flex-col justify-between h-full min-h-[220px]">
-                <div className="mb-4">
+              <div className="p-6 bg-white/90 rounded-b-2xl shadow-lg border border-gray-100 flex flex-col flex-1">
+                <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors duration-300">
                     {product.name}
                   </h3>
@@ -211,7 +211,6 @@ const Products = () => {
                     {product.description}
                   </p>
                 </div>
-
                 <div className="flex items-center justify-between mt-auto pt-4">
                   <span className="text-xl font-bold text-orange-600">
                     ₹{formatPrice(product.price)}
