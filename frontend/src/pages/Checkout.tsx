@@ -25,6 +25,8 @@ const CheckoutPage = () => {
         totalAmount={totalAmount}
         items={cartItems.map(item => ({
           productId: item.productId,
+          name: item.name,
+          image: item.image,
           quantity: item.quantity,
           price: item.price
         }))}

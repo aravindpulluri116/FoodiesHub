@@ -22,6 +22,8 @@ interface CheckoutFormProps {
     productId: string;
     quantity: number;
     price: number;
+    image?: string;
+    name: string;
   }>;
   onClose: () => void;
 }
@@ -185,11 +187,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
+    <Card className="w-full max-w-2xl mx-auto shadow-2xl border-0 bg-gradient-to-br from-white to-gray-50 transform hover:scale-[1.02] transition-all duration-300 rounded-xl">
+      <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-xl">
         <CardTitle className="text-2xl font-bold text-center">Checkout</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
           <div className="space-y-4">
@@ -202,7 +204,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  placeholder="John Doe"
                   required
                 />
               </div>
@@ -214,7 +215,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                   type="tel"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="+91 9876543210"
                   required
                 />
               </div>
@@ -226,7 +226,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="john@example.com"
                 />
               </div>
             </div>
@@ -243,7 +242,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                   name="streetAddress"
                   value={formData.streetAddress}
                   onChange={handleInputChange}
-                  placeholder="123 Main Street"
                   required
                 />
               </div>
@@ -255,7 +253,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    placeholder="Mumbai"
                     required
                   />
                 </div>
@@ -266,7 +263,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    placeholder="Maharashtra"
                     required
                   />
                 </div>
@@ -277,7 +273,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                     name="pincode"
                     value={formData.pincode}
                     onChange={handleInputChange}
-                    placeholder="400001"
                     required
                   />
                 </div>
@@ -289,7 +284,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
                   name="additionalInfo"
                   value={formData.additionalInfo}
                   onChange={handleInputChange}
-                  placeholder="Landmark, delivery instructions, etc."
                   rows={3}
                 />
               </div>
@@ -318,9 +312,36 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
           {/* Order Summary */}
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-lg font-semibold">Order Summary</h3>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Amount:</span>
-              <span className="text-xl font-bold text-orange-600">₹{totalAmount.toFixed(2)}</span>
+            <div className="overflow-x-auto bg-white rounded-lg shadow-lg border border-gray-200">
+              <table className="min-w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+                    <th className="py-3 px-4 font-medium text-gray-700">Product</th>
+                    <th className="py-3 px-4 font-medium text-gray-700">Qty</th>
+                    <th className="py-3 px-4 font-medium text-gray-700">Price</th>
+                    <th className="py-3 px-4 font-medium text-gray-700">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={item.productId} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-orange-50 transition-colors duration-200`}>
+                      <td className="py-3 px-4 flex items-center space-x-3">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg shadow-md" />
+                        )}
+                        <span className="font-medium">{item.name}</span>
+                      </td>
+                      <td className="py-3 px-4">{item.quantity}</td>
+                      <td className="py-3 px-4">₹{item.price.toFixed(2)}</td>
+                      <td className="py-3 px-4 font-semibold">₹{(item.price * item.quantity).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-between items-center mt-6 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+              <span className="text-gray-700 font-semibold text-lg">Total Amount:</span>
+              <span className="text-2xl font-bold text-orange-600">₹{totalAmount.toFixed(2)}</span>
             </div>
           </div>
 
@@ -331,12 +352,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
               variant="outline"
               onClick={onClose}
               disabled={loading}
+              className="shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 border-2 border-gray-300 hover:border-gray-400"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-white font-semibold"
               disabled={loading || (paymentMethod === 'online' && !cashfree)}
             >
               {loading ? 'Processing...' : paymentMethod === 'cod' ? 'Place Order' : 'Pay Now'}

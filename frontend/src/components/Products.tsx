@@ -171,8 +171,7 @@ const Products = () => {
           {filteredProducts.map((product: Product) => (
             <div
               key={product._id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group
-              "
+              className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl hover:shadow-[0_8px_32px_rgba(255,140,0,0.25)] transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 border-0 overflow-hidden group"
             >
               {/* Product Image */}
               <div className="relative overflow-hidden">
@@ -203,7 +202,7 @@ const Products = () => {
               </div>
 
               {/* Product Info */}
-              <div className="p-6">
+              <div className="p-6 bg-white/90 rounded-b-2xl shadow-lg border border-gray-100">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors duration-300">
                     {product.name}
