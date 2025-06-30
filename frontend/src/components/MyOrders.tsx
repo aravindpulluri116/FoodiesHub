@@ -203,50 +203,48 @@ const MyOrders = () => {
       ) : (
         <div className="grid gap-4">
           {orders.map((order) => (
-            <Card key={order._id} className="overflow-hidden max-w-3xl mx-auto">
-              <CardContent className="p-6">
+            <Card key={order._id} className="overflow-hidden max-w-3xl mx-auto bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border-0">
+              <CardContent className="p-8 flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold">Order #{order._id}</h2>
-                    <p className="text-sm text-gray-600">
-                      Placed on {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
+                    <h2 className="text-lg font-bold text-gray-800 mb-1">Order <span className='text-gray-500 font-mono'>{order._id}</span></h2>
+                    <p className="text-sm text-gray-500">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div className="flex justify-end items-center">
-                    <span className={`px-4 py-2 rounded-full text-base font-medium ${
+                    <span className={`px-4 py-2 rounded-full text-base font-semibold shadow-md ${
                       order.status === 'completed' ? 'bg-green-100 text-green-800' :
                       order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                       order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  </span>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="mt-4 border-t pt-4">
-                  <h3 className="font-semibold mb-2">Items:</h3>
+                  <h3 className="font-semibold mb-2 text-gray-700">Items:</h3>
                   <div className="space-y-2">
                     {order.items.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
-                        <span>
+                        <span className="font-medium text-gray-800">
                           {item.product?.name || 'Product not available'} x {item.quantity}
                         </span>
-                        <span>₹{(item.product?.price || 0 * item.quantity).toFixed(2)}</span>
+                        <span className="text-gray-700">₹{((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="mt-4 border-t pt-4">
-                  <h3 className="font-semibold mb-2">Delivery Address:</h3>
-                  <p className="text-sm text-gray-600">{order.address}</p>
+                  <h3 className="font-semibold mb-2 text-gray-700">Delivery Address:</h3>
+                  <p className="text-sm text-gray-600 whitespace-pre-line">{order.address}</p>
                 </div>
 
                 <div className="mt-4 flex flex-col space-y-4 border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-700">Payment:</span>
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow ${
                       order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
                       order.payment?.method === 'cash_on_delivery' ? 'bg-gray-200 text-gray-800' :
                       'bg-yellow-100 text-yellow-800'
@@ -255,7 +253,7 @@ const MyOrders = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold">
+                    <span className="text-xl font-bold text-orange-700">
                       Total: ₹{order.totalAmount.toFixed(2)}
                     </span>
                     <div className="flex space-x-2">

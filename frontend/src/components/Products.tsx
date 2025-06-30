@@ -155,11 +155,11 @@ const Products = () => {
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                selectedCategory === category.id
-                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-8 py-3 rounded-full font-semibold text-base shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 
+                ${selectedCategory === category.id
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-xl scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-white hover:shadow-lg hover:scale-105'}
+              `}
             >
               {category.name}
             </button>

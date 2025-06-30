@@ -90,20 +90,6 @@ const Contact = () => {
           </a>
         </div>
 
-        {/* Business Hours */}
-        <div className="mt-8 text-center">
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Business Hours</h4>
-          <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto">
-            <div className="bg-white rounded-lg p-4 shadow-md">
-              <p className="font-medium text-gray-800">Monday - Saturday</p>
-              <p className="text-gray-600">9:00 AM - 7:00 PM</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-md">
-              <p className="font-medium text-gray-800">Sunday</p>
-              <p className="text-gray-600">10:00 AM - 5:00 PM</p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
