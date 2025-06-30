@@ -195,7 +195,7 @@ const MyOrders = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+      <h1 className="text-2xl justify-center font-bold mb-6">My Orders</h1>
       {orders.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           You haven't placed any orders yet.
