@@ -171,7 +171,8 @@ const Products = () => {
           {filteredProducts.map((product: Product) => (
             <div
               key={product._id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group"
+              className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group
+              "
             >
               {/* Product Image */}
               <div className="relative overflow-hidden">
@@ -213,15 +214,15 @@ const Products = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-orange-600">
+                  <span className="text-xl font-bold text-orange-600">
                     ₹{formatPrice(product.price)}
                   </span>
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
                   >
                     <ShoppingCart size={16} />
-                    <span>Add to Cart</span>
+                    <span className='text-[0.7rem] md:text-sm'>Add to Cart</span>
                   </button>
                 </div>
               </div>
