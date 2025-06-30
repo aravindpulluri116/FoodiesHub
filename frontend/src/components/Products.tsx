@@ -202,7 +202,7 @@ const Products = () => {
               </div>
 
               {/* Product Info */}
-              <div className="p-6 bg-white/90 rounded-b-2xl shadow-lg border border-gray-100">
+              <div className="p-6 bg-white/90 rounded-b-2xl shadow-lg border border-gray-100 flex flex-col justify-between h-full min-h-[220px]">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors duration-300">
                     {product.name}
@@ -212,7 +212,7 @@ const Products = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-auto pt-4">
                   <span className="text-xl font-bold text-orange-600">
                     ₹{formatPrice(product.price)}
                   </span>

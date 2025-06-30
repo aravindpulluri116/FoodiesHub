@@ -79,7 +79,7 @@ const Cart = () => {
       )}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col border-0">
             <div className="p-4 border-b flex justify-between items-center">
               <div className="flex space-x-4">
                 <button
@@ -121,19 +121,17 @@ const Cart = () => {
                       {cartItems
                         .filter((item) => item?.productId)
                         .map((item) => (
-                          <Card key={item.productId}>
+                          <Card key={item.productId} className="bg-white/90 rounded-xl shadow-lg border-0">
                             <CardContent className="p-4">
                               <div className="flex items-start space-x-4">
                                 <img
                                   src={item.image}
                                   alt={item.name}
-                                  className="w-20 h-20 object-cover rounded"
+                                  className="w-20 h-20 object-cover rounded-lg shadow-md border border-gray-100"
                                 />
                                 <div className="flex-1">
-                                  <h3 className="font-medium">{item.name}</h3>
-                                  <p className="text-sm text-gray-600">
-                                    ₹{formatPrice(item.price)}
-                                  </p>
+                                  <h3 className="font-semibold text-lg text-gray-800 mb-1">{item.name}</h3>
+                                  <p className="text-sm text-gray-600 mb-2">₹{formatPrice(item.price)}</p>
                                   <div className="flex items-center space-x-2 mt-2">
                                     <button
                                       onClick={() =>
@@ -142,11 +140,11 @@ const Cart = () => {
                                           item.quantity - 1
                                         )
                                       }
-                                      className="p-1 rounded-full hover:bg-gray-100"
+                                      className="p-1 rounded-full bg-gray-100 hover:bg-orange-100 shadow transition"
                                     >
                                       <Minus size={16} />
                                     </button>
-                                    <span>{item.quantity}</span>
+                                    <span className="font-semibold text-base">{item.quantity}</span>
                                     <button
                                       onClick={() =>
                                         updateQuantity(
@@ -154,7 +152,7 @@ const Cart = () => {
                                           item.quantity + 1
                                         )
                                       }
-                                      className="p-1 rounded-full hover:bg-gray-100"
+                                      className="p-1 rounded-full bg-gray-100 hover:bg-orange-100 shadow transition"
                                     >
                                       <Plus size={16} />
                                     </button>
@@ -162,7 +160,7 @@ const Cart = () => {
                                 </div>
                                 <button
                                   onClick={() => removeFromCart(item.productId)}
-                                  className="text-gray-400 hover:text-red-500"
+                                  className="text-gray-400 hover:text-red-500 ml-2"
                                 >
                                   <X size={20} />
                                 </button>
@@ -204,9 +202,8 @@ const Cart = () => {
                                         name: item.name,
                                         price: item.price,
                                         image: item.image,
-                                        // These fields are not in WishlistItem, so provide defaults or fetch them
-                                        description: " ",
-                                        category: " ",
+                                        description: '',
+                                        category: '',
                                       });
                                       removeFromWishlist(item.productId);
                                     }}
@@ -236,15 +233,15 @@ const Cart = () => {
 
             {/* Place Order and WhatsApp Buttons */}
             {activeTab === "cart" && cartItems.length > 0 && (
-              <div className="p-4 border-t flex flex-col gap-2">
+              <div className="p-4 border-t flex flex-col gap-2 bg-gradient-to-br from-white to-gray-50 rounded-b-2xl">
                 <Button
-                  className="bg-orange-600 hover:bg-orange-700 w-full"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-white font-semibold w-full text-lg py-3 rounded-xl"
                   onClick={handleOpenCheckout}
                 >
                   Place Order
                 </Button>
                 <Button
-                  className="bg-green-600 hover:bg-green-700 w-full"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 text-white font-semibold w-full text-lg py-3 rounded-xl"
                   onClick={handleWhatsAppClick}
                 >
                   Order via WhatsApp
