@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CheckoutForm from "./CheckoutForm";
 import { config } from "../config";
 import { useMenu } from "@/contexts/MenuContext";
+import { toast } from "@/components/ui/use-toast";
 // Load Cashfree SDK
 declare global {
   interface Window {
@@ -197,15 +198,23 @@ const Cart = () => {
                                   <Button
                                     size="sm"
                                     onClick={() => {
+                                      if (!item._id) {
+                                        toast({
+                                          title: "Error",
+                                          description: "Product ID is missing. Please try again.",
+                                          variant: "destructive",
+                                        });
+                                        return;
+                                      }
                                       addToCart({
-                                        _id: item.productId,
+                                        _id: item._id,
                                         name: item.name,
                                         price: item.price,
                                         image: item.image,
-                                        description: '',
-                                        category: '',
+                                        description: item.description || '',
+                                        category: item.category || '',
                                       });
-                                      removeFromWishlist(item.productId);
+                                      removeFromWishlist(item._id);
                                     }}
                                   >
                                     Add to Cart
@@ -214,7 +223,7 @@ const Cart = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() =>
-                                      removeFromWishlist(item.productId)
+                                      removeFromWishlist(item._id)
                                     }
                                   >
                                     Remove

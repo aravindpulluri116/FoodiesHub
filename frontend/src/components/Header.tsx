@@ -163,7 +163,13 @@ const Header = () => {
                     </Button>
                   </Link>
                 )}
-                
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="flex items-center bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300"
+                >
+                  Logout
+                </Button>
               </>
             ) : (
               <a
