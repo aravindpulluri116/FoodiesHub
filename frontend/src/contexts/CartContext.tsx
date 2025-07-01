@@ -92,6 +92,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const fetchWishlist = async () => {
     try {
       const response = await api.get('/wishlist');
+      console.log('Wishlist response:', response.data);
       setWishlistItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -137,6 +138,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = async (product: Product) => {
     try {
+      console.log('Adding to cart - Product:', product);
+      console.log('Sending request with:', { productId: product._id, quantity: 1 });
       const response = await api.post('/cart/add', {
         productId: product._id,
         quantity: 1
@@ -151,6 +154,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error: any) {
       console.error('Error adding to cart:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       if (error.response && error.response.status === 401) {
         toast({
           title: "Authentication Error",
@@ -229,7 +234,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromWishlist = async (productId: string) => {
     try {
+      console.log('Removing from wishlist - productId:', productId);
       const response = await api.delete(`/wishlist/remove/${productId}`);
+      console.log('Remove wishlist response:', response.data);
       if (response.data) {
         const data = response.data || [];
         setWishlistItems(Array.isArray(data) ? data : []);
@@ -240,6 +247,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error('Error removing from wishlist:', error);
+      console.error('Error response:', error.response?.data);
       toast({
         title: "Error",
         description: "Failed to remove item from wishlist. Please try again.",
