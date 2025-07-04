@@ -97,6 +97,7 @@ const createOrder = async (req, res) => {
                 status: 'pending'
             }
         });
+        console.log('[DEBUG] Order created in DB:', order._id);
 
         // Create payment order with Cashfree for online payment
         const orderRequest = {
@@ -159,7 +160,7 @@ const verifyPayment = async (req, res) => {
         // Find the order
         const order = await Order.findById(orderId);
         if (!order) {
-            console.log('Order not found during verification:', orderId);
+            console.error('[DEBUG] Order not found in DB during verification:', orderId);
             return res.status(404).json({
                 success: false,
                 message: "Order not found"
