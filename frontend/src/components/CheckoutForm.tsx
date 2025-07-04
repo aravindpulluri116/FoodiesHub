@@ -151,17 +151,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ totalAmount, items, onClose
         });
 
         if (response.data.success) {
-          const { payment_session_id } = response.data.data;
+          const { order_id, payment_session_id } = response.data.data;
           console.log('Payment session ID:', payment_session_id);
-          if (!payment_session_id) {
+          if (!payment_session_id || !order_id) {
             toast({
               title: "Payment Error",
-              description: "Payment session ID is missing. Please try again.",
+              description: "Payment session ID or order ID is missing. Please try again.",
               variant: "destructive"
             });
             setLoading(false);
             return;
           }
+          // Store the order_id (MongoDB _id) for later verification
+          localStorage.setItem('lastOrderId', order_id);
+          // Always ensure the return_url in backend uses this order_id
           cashfree.checkout({
             paymentSessionId: payment_session_id,
             redirectTarget: "_self"
