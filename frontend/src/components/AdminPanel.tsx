@@ -234,100 +234,121 @@ const AdminPanel = () => {
           <div className="text-center text-gray-400 py-12">No orders found.</div>
         )}
         {ordersToShow.map((order) => (
-          <Card key={order._id} className="p-6 max-w-3xl mx-auto shadow-lg rounded-2xl hover:shadow-2xl transition-all cursor-pointer border border-gray-200 bg-white relative">
-            {/* Top-right badges row */}
-            <div className="absolute top-4 right-4 flex flex-row items-center space-x-2 z-10">
-              {/* Order Status Badge with controlled dropdown */}
-              <div className="relative" ref={el => (dropdownRefs.current[order._id] = el)}>
-                <button
-                  className={`px-4 py-2 rounded-full text-base font-medium focus:outline-none flex items-center space-x-2
-                    ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                      order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'}
-                  `}
-                  onClick={e => {
-                    e.stopPropagation();
-                    setOpenDropdownOrderId(openDropdownOrderId === order._id ? null : order._id);
-                  }}
-                >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  <FaChevronDown className="ml-1 text-xs" />
-                </button>
-                {openDropdownOrderId === order._id && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-20">
-                    {['pending', 'placed'].map(status => (
-                      <button
-                        key={status}
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleChangeStatus(order._id, status);
-                          setOpenDropdownOrderId(null);
-                        }}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
-                        disabled={order.status === status}
-                      >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </button>
-                    ))}
+          <Card key={order._id} className="overflow-hidden max-w-3xl mx-auto bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border-0">
+            <div className="p-8 flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800 mb-1">Order <span className='text-gray-500 font-mono'>{order._id}</span></h2>
+                  <p className="text-sm text-gray-500">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-600 mt-2"><span className="font-semibold">Customer:</span> {order.user.name}</p>
+                  <p className="text-sm text-gray-600"><span className="font-semibold">Email:</span> {order.user.email}</p>
+                </div>
+                <div className="flex justify-end items-center space-x-2">
+                  {/* Order Status Badge with controlled dropdown */}
+                  <div className="relative" ref={el => (dropdownRefs.current[order._id] = el)}>
+                    <button
+                      className={`px-4 py-2 rounded-full text-base font-semibold shadow-md focus:outline-none flex items-center space-x-2
+                        ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'}
+                      `}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setOpenDropdownOrderId(openDropdownOrderId === order._id ? null : order._id);
+                      }}
+                    >
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      <FaChevronDown className="ml-1 text-xs" />
+                    </button>
+                    {openDropdownOrderId === order._id && (
+                      <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-20">
+                        {['pending', 'placed'].map(status => (
+                          <button
+                            key={status}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleChangeStatus(order._id, status);
+                              setOpenDropdownOrderId(null);
+                            }}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                            disabled={order.status === status}
+                          >
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                  {/* Payment Status Badge */}
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold shadow flex items-center space-x-1
+                    ${order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'}
+                  `}>
+                    {order.payment?.status === 'completed' ? <FaCheckCircle className="text-green-500" /> :
+                      order.payment?.status === 'failed' ? <FaTimesCircle className="text-red-500" /> :
+                      <FaSyncAlt className="text-yellow-500 animate-spin" />}
+                    <span>{order.payment?.status === 'completed' ? 'Paid' : order.payment?.status === 'failed' ? 'Failed' : 'Pending'}</span>
+                  </span>
+                  {/* Payment Method Badge */}
+                  <span className="px-3 py-1 rounded-full text-sm font-semibold shadow flex items-center space-x-1 bg-gray-100 text-gray-800">
+                    {order.payment?.method === 'cash_on_delivery' ? <FaMoneyBillWave className="text-green-600" /> : <FaCreditCard className="text-blue-600" />}
+                    <span>{order.payment?.method === 'cash_on_delivery' ? 'COD' : 'Online'}</span>
+                  </span>
+                </div>
               </div>
-              {/* Payment Status Badge */}
-              <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1
-                ${order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
-                  order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'}
-              `}>
-                {order.payment?.status === 'completed' ? <FaCheckCircle className="text-green-500" /> :
-                  order.payment?.status === 'failed' ? <FaTimesCircle className="text-red-500" /> :
-                  <FaSyncAlt className="text-yellow-500 animate-spin" />}
-                <span>{order.payment?.status === 'completed' ? 'Paid' : order.payment?.status === 'failed' ? 'Failed' : 'Pending'}</span>
-              </span>
-              {/* Payment Method Badge */}
-              <span className="px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 bg-gray-100 text-gray-800">
-                {order.payment?.method === 'cash_on_delivery' ? <FaMoneyBillWave className="text-green-600" /> : <FaCreditCard className="text-blue-600" />}
-                <span>{order.payment?.method === 'cash_on_delivery' ? 'COD' : 'Online'}</span>
-              </span>
-            </div>
-            {/* Card main content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" onClick={() => { setModalOrder(order); setModalOpen(true); }}>
-              <div>
-                <h2 className="text-lg font-semibold">Order #{order._id}</h2>
-                <p className="text-sm text-gray-600">Customer: {order.user.name}</p>
-                <p className="text-sm text-gray-600">Email: {order.user.email}</p>
-                <p className="text-sm text-gray-600">Address: {order.address}</p>
-                <p className="text-sm text-gray-600">
-                  Date: {new Date(order.createdAt).toLocaleDateString()}
-                </p>
+
+              <div className="mt-4 border-t pt-4">
+                <h3 className="font-semibold mb-2 text-gray-700">Items:</h3>
+                <div className="space-y-2">
+                  {order.items.map((item, index) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span className="font-medium text-gray-800">
+                        {item.product?.name || 'Product not available'} x {item.quantity}
+                      </span>
+                      <span className="text-gray-700">₹{((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 border-t pt-4">
+                <h3 className="font-semibold mb-2 text-gray-700">Delivery Address:</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-line">{order.address}</p>
+              </div>
+
+              <div className="mt-4 flex flex-col space-y-4 border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-gray-700">Payment:</span>
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow ${
+                    order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
+                    order.payment?.method === 'cash_on_delivery' ? 'bg-gray-200 text-gray-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {order.payment?.status === 'completed' ? 'Paid' : 
+                     order.payment?.status === 'failed' ? 'Payment Failed' :
+                     order.payment?.method === 'cash_on_delivery' ? 'Cash on Delivery' : 'Pending'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold text-orange-700">
+                    Total: ₹{order.totalAmount.toFixed(2)}
+                  </span>
+                  <div className="flex space-x-2">
+                    {(order.status === 'pending' || order.status === 'placed') && (
+                      <Button
+                        onClick={e => { e.stopPropagation(); handleCancelOrder(order._id); }}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Cancel Order
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="mt-4">
-              <h3 className="font-semibold mb-2">Items:</h3>
-              <ul className="space-y-2">
-                {order.items.map((item, index) => (
-                  <li key={index} className="text-sm">
-                    {item.product?.name || 'Product not available'} x {item.quantity} - ₹{((item.product?.price || 0) * item.quantity).toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-4 flex justify-between items-center">
-              <div className="text-lg font-semibold text-orange-700">
-                Total: ₹{order.totalAmount.toFixed(2)}
-              </div>
-            </div>
-            {/* Action Buttons below content, not overlapping badges */}
-            {(order.status === 'pending' || order.status === 'placed') && (
-              <div className="flex justify-end mt-6">
-                <Button
-                  onClick={e => { e.stopPropagation(); handleCancelOrder(order._id); }}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Cancel Order
-                </Button>
-              </div>
-            )}
           </Card>
         ))}
       </div>
