@@ -5,6 +5,10 @@ import { Card } from './ui/card';
 import { toast } from 'react-hot-toast';
 import { config } from '../config';
 
+// Add a modal component for order details
+import ReactModal from 'react-modal';
+import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaCreditCard, FaSyncAlt, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+
 // Create axios instance with base URL
 const api = axios.create({
   baseURL: config.apiUrl,
@@ -44,6 +48,10 @@ const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
+  const [modalOrder, setModalOrder] = useState<Order | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -121,6 +129,25 @@ const AdminPanel = () => {
     }
   };
 
+  // Add search and pagination
+  const filtered = filteredOrders.filter(order =>
+    order.user.name.toLowerCase().includes(search.toLowerCase()) ||
+    order.user.email.toLowerCase().includes(search.toLowerCase()) ||
+    order._id.toLowerCase().includes(search.toLowerCase())
+  );
+  const ordersToShow = showAll ? filtered : filtered.slice(0, 10);
+
+  // Add status change handler
+  const handleChangeStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await api.post(`/admin/orders/${orderId}/status`, { status: newStatus });
+      toast.success(`Order status changed to ${newStatus}`);
+      fetchOrders();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to change status');
+    }
+  };
+
   // For Google OAuth login, use:
   const googleLoginUrl = `${config.apiUrl}/auth/google`;
 
@@ -141,10 +168,20 @@ const AdminPanel = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Admin Panel - Orders</h1>
-      
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">Admin Panel - Orders</h1>
+      {/* Search and Filters */}
+      <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <FaSearch className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name, email, or order ID"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm w-64"
+          />
+        </div>
+        {/* ... existing filters ... */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium">Order Status:</label>
           <select 
@@ -159,7 +196,6 @@ const AdminPanel = () => {
             <option value="cancelled">Cancelled</option>
           </select>
         </div>
-        
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium">Payment Status:</label>
           <select 
@@ -173,16 +209,60 @@ const AdminPanel = () => {
             <option value="failed">Failed</option>
           </select>
         </div>
-        
         <div className="text-sm text-gray-600">
-          Showing {filteredOrders.length} of {orders.length} orders
+          Showing {filtered.length} of {orders.length} orders
         </div>
       </div>
-      
-      <div className="grid gap-4">
-        {filteredOrders.map((order) => (
-          <Card key={order._id} className="p-4 max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Orders List */}
+      <div className="grid gap-6">
+        {ordersToShow.length === 0 && (
+          <div className="text-center text-gray-400 py-12">No orders found.</div>
+        )}
+        {ordersToShow.map((order) => (
+          <Card key={order._id} className="p-6 max-w-3xl mx-auto shadow-lg rounded-2xl hover:shadow-2xl transition-all cursor-pointer border border-gray-200 bg-white relative">
+            <div className="absolute top-4 right-4 flex flex-row items-center space-x-2">
+              {/* Order Status Badge with dropdown */}
+              <div className="relative group">
+                <button className={`px-4 py-2 rounded-full text-base font-medium focus:outline-none flex items-center space-x-2
+                  ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                    order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'}
+                `}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  <FaChevronDown className="ml-1 text-xs" />
+                </button>
+                <div className="hidden group-hover:block absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-10">
+                  {['pending', 'placed'].map(status => (
+                    <button
+                      key={status}
+                      onClick={() => handleChangeStatus(order._id, status)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                      disabled={order.status === status}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Payment Status Badge */}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1
+                ${order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'}
+              `}>
+                {order.payment?.status === 'completed' ? <FaCheckCircle className="text-green-500" /> :
+                  order.payment?.status === 'failed' ? <FaTimesCircle className="text-red-500" /> :
+                  <FaSyncAlt className="text-yellow-500 animate-spin" />}
+                <span>{order.payment?.status === 'completed' ? 'Paid' : order.payment?.status === 'failed' ? 'Failed' : 'Pending'}</span>
+              </span>
+              {/* Payment Method Badge */}
+              <span className="px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 bg-gray-100 text-gray-800">
+                {order.payment?.method === 'cash_on_delivery' ? <FaMoneyBillWave className="text-green-600" /> : <FaCreditCard className="text-blue-600" />}
+                <span>{order.payment?.method === 'cash_on_delivery' ? 'COD' : 'Online'}</span>
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" onClick={() => { setModalOrder(order); setModalOpen(true); }}>
               <div>
                 <h2 className="text-lg font-semibold">Order #{order._id}</h2>
                 <p className="text-sm text-gray-600">Customer: {order.user.name}</p>
@@ -193,31 +273,17 @@ const AdminPanel = () => {
                 </p>
               </div>
               <div className="flex flex-col items-end space-y-2">
-                {/* Order Status */}
-                <span className={`px-4 py-2 rounded-full text-base font-medium ${
-                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                  order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                </span>
-                
-                {/* Payment Status */}
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
-                  order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {order.payment?.status === 'completed' ? '🟢 Paid' :
-                   order.payment?.status === 'failed' ? '🔴 Failed' :
-                   '🟡 Pending'}
-                </span>
-                
-                {/* Payment Method */}
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                  {order.payment?.method === 'cash_on_delivery' ? '💵 COD' : '💳 Online'}
-                </span>
+                {/* Action Buttons */}
+                <div className="flex space-x-2">
+                  {(order.status === 'pending' || order.status === 'placed') && (
+                    <Button
+                      onClick={e => { e.stopPropagation(); handleCancelOrder(order._id); }}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Cancel Order
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
             <div className="mt-4">
@@ -234,28 +300,55 @@ const AdminPanel = () => {
               <div className="text-lg font-semibold text-orange-700">
                 Total: ₹{order.totalAmount.toFixed(2)}
               </div>
-              <div className="flex space-x-2">
-                {order.status === 'pending' && (
-                  <Button
-                    onClick={() => handlePlaceOrder(order._id)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Mark as Placed
-                  </Button>
-                )}
-                {(order.status === 'pending' || order.status === 'placed') && (
-                  <Button
-                    onClick={() => handleCancelOrder(order._id)}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Cancel Order
-                  </Button>
-                )}
-              </div>
             </div>
           </Card>
         ))}
       </div>
+      {/* Show more/less button for pagination */}
+      {filtered.length > 10 && (
+        <div className="flex justify-center mt-6">
+          <Button onClick={() => setShowAll(!showAll)} variant="outline">
+            {showAll ? <><FaChevronUp className="inline mr-1" /> Show Less</> : <><FaChevronDown className="inline mr-1" /> Show More</>}
+          </Button>
+        </div>
+      )}
+      {/* Order Details Modal */}
+      <ReactModal
+        isOpen={modalOpen}
+        onRequestClose={() => setModalOpen(false)}
+        contentLabel="Order Details"
+        className="max-w-lg mx-auto mt-24 bg-white rounded-xl shadow-2xl p-8 outline-none border border-gray-200"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
+        ariaHideApp={false}
+      >
+        {modalOrder && (
+          <div>
+            <h2 className="text-xl font-bold mb-4">Order #{modalOrder._id}</h2>
+            <div className="mb-2 text-gray-700">Customer: {modalOrder.user.name}</div>
+            <div className="mb-2 text-gray-700">Email: {modalOrder.user.email}</div>
+            <div className="mb-2 text-gray-700">Address: {modalOrder.address}</div>
+            <div className="mb-2 text-gray-700">Date: {new Date(modalOrder.createdAt).toLocaleDateString()}</div>
+            <div className="mb-2 text-gray-700">Status: <span className="font-semibold">{modalOrder.status}</span></div>
+            <div className="mb-2 text-gray-700">Payment: <span className="font-semibold">{modalOrder.payment?.status} ({modalOrder.payment?.method})</span></div>
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Items:</h3>
+              <ul className="space-y-2">
+                {modalOrder.items.map((item, idx) => (
+                  <li key={idx} className="text-sm">
+                    {item.product?.name || 'Product not available'} x {item.quantity} - ₹{((item.product?.price || 0) * item.quantity).toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="text-lg font-semibold text-orange-700 mb-4">
+              Total: ₹{modalOrder.totalAmount.toFixed(2)}
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setModalOpen(false)} variant="outline">Close</Button>
+            </div>
+          </div>
+        )}
+      </ReactModal>
     </div>
   );
 };

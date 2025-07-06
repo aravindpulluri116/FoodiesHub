@@ -139,4 +139,27 @@ router.post('/orders/:orderId/cancel', async (req, res) => {
   }
 });
 
+// Add endpoint to update order status (pending/placed)
+router.post('/orders/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: 'Invalid order ID format' });
+    }
+    if (!['pending', 'placed'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Only "pending" or "placed" allowed.' });
+    }
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    const updatedOrder = await order.updateStatus(status);
+    res.json({ message: `Order status updated to ${status}`, order: updatedOrder });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ message: 'Error updating order status', error: error.message });
+  }
+});
+
 module.exports = router; 
