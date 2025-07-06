@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -52,6 +52,21 @@ const AdminPanel = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [openDropdownOrderId, setOpenDropdownOrderId] = useState<string | null>(null);
+  const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (openDropdownOrderId && dropdownRefs.current[openDropdownOrderId]) {
+        if (!dropdownRefs.current[openDropdownOrderId]?.contains(event.target as Node)) {
+          setOpenDropdownOrderId(null);
+        }
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdownOrderId]);
 
   useEffect(() => {
     checkAuth();
@@ -220,30 +235,43 @@ const AdminPanel = () => {
         )}
         {ordersToShow.map((order) => (
           <Card key={order._id} className="p-6 max-w-3xl mx-auto shadow-lg rounded-2xl hover:shadow-2xl transition-all cursor-pointer border border-gray-200 bg-white relative">
-            <div className="absolute top-4 right-4 flex flex-row items-center space-x-2">
-              {/* Order Status Badge with dropdown */}
-              <div className="relative group">
-                <button className={`px-4 py-2 rounded-full text-base font-medium focus:outline-none flex items-center space-x-2
-                  ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                    order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
-                    'bg-yellow-100 text-yellow-800'}
-                `}>
+            {/* Top-right badges row */}
+            <div className="absolute top-4 right-4 flex flex-row items-center space-x-2 z-10">
+              {/* Order Status Badge with controlled dropdown */}
+              <div className="relative" ref={el => (dropdownRefs.current[order._id] = el)}>
+                <button
+                  className={`px-4 py-2 rounded-full text-base font-medium focus:outline-none flex items-center space-x-2
+                    ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      order.status === 'placed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'}
+                  `}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setOpenDropdownOrderId(openDropdownOrderId === order._id ? null : order._id);
+                  }}
+                >
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   <FaChevronDown className="ml-1 text-xs" />
                 </button>
-                <div className="hidden group-hover:block absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-10">
-                  {['pending', 'placed'].map(status => (
-                    <button
-                      key={status}
-                      onClick={() => handleChangeStatus(order._id, status)}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
-                      disabled={order.status === status}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  ))}
-                </div>
+                {openDropdownOrderId === order._id && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-20">
+                    {['pending', 'placed'].map(status => (
+                      <button
+                        key={status}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleChangeStatus(order._id, status);
+                          setOpenDropdownOrderId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                        disabled={order.status === status}
+                      >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* Payment Status Badge */}
               <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1
@@ -262,6 +290,7 @@ const AdminPanel = () => {
                 <span>{order.payment?.method === 'cash_on_delivery' ? 'COD' : 'Online'}</span>
               </span>
             </div>
+            {/* Card main content */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" onClick={() => { setModalOrder(order); setModalOpen(true); }}>
               <div>
                 <h2 className="text-lg font-semibold">Order #{order._id}</h2>
@@ -271,19 +300,6 @@ const AdminPanel = () => {
                 <p className="text-sm text-gray-600">
                   Date: {new Date(order.createdAt).toLocaleDateString()}
                 </p>
-              </div>
-              <div className="flex flex-col items-end space-y-2">
-                {/* Action Buttons */}
-                <div className="flex space-x-2">
-                  {(order.status === 'pending' || order.status === 'placed') && (
-                    <Button
-                      onClick={e => { e.stopPropagation(); handleCancelOrder(order._id); }}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Cancel Order
-                    </Button>
-                  )}
-                </div>
               </div>
             </div>
             <div className="mt-4">
@@ -301,6 +317,17 @@ const AdminPanel = () => {
                 Total: ₹{order.totalAmount.toFixed(2)}
               </div>
             </div>
+            {/* Action Buttons below content, not overlapping badges */}
+            {(order.status === 'pending' || order.status === 'placed') && (
+              <div className="flex justify-end mt-6">
+                <Button
+                  onClick={e => { e.stopPropagation(); handleCancelOrder(order._id); }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Cancel Order
+                </Button>
+              </div>
+            )}
           </Card>
         ))}
       </div>
