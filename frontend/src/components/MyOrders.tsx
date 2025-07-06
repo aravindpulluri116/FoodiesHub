@@ -135,27 +135,50 @@ const MyOrders = () => {
   };
 
   const handlePayNow = async (orderId: string) => {
-    if (!cashfree) {
-      toast({
-        title: "Payment gateway not ready",
-        description: "The payment gateway is still loading. Please try again in a moment.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setProcessingPayment(true);
     try {
-      const response = await api.post<PaymentResponse>('/payments/retry-payment', { orderId });
+      // Find the order to determine if it's COD or online
+      const order = orders.find(o => o._id === orderId);
+      
+      if (!order) {
+        throw new Error('Order not found');
+      }
 
-      if (response.data.success) {
-        const { payment_session_id } = response.data.data;
-        cashfree.checkout({
-          paymentSessionId: payment_session_id,
-          redirectTarget: "_self"
-        });
+      if (order.payment?.method === 'cash_on_delivery') {
+        // Handle COD order payment
+        const response = await api.post(`/orders/${orderId}/pay-cod`);
+        
+        if (response.data.success) {
+          toast({
+            title: "Payment Successful",
+            description: "Your COD order has been paid successfully.",
+          });
+          fetchOrders(); // Refresh the orders list
+        } else {
+          throw new Error(response.data.message || 'Failed to process payment.');
+        }
       } else {
-        throw new Error(response.data.message || 'Failed to create payment session.');
+        // Handle online payment (existing logic)
+        if (!cashfree) {
+          toast({
+            title: "Payment gateway not ready",
+            description: "The payment gateway is still loading. Please try again in a moment.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const response = await api.post<PaymentResponse>('/payments/retry-payment', { orderId });
+
+        if (response.data.success) {
+          const { payment_session_id } = response.data.data;
+          cashfree.checkout({
+            paymentSessionId: payment_session_id,
+            redirectTarget: "_self"
+          });
+        } else {
+          throw new Error(response.data.message || 'Failed to create payment session.');
+        }
       }
     } catch (error: any) {
       toast({
@@ -257,9 +280,9 @@ const MyOrders = () => {
                       Total: ₹{order.totalAmount.toFixed(2)}
                     </span>
                     <div className="flex space-x-2">
-                      {/* Show "Pay Now" for pending online orders OR placed COD orders */}
+                      {/* Show "Pay Now" for pending online orders OR placed COD orders with pending payment */}
                       {((order.payment?.method === 'online' && order.status === 'pending') ||
-                        (order.payment?.method === 'cash_on_delivery' && order.status === 'placed')) && (
+                        (order.payment?.method === 'cash_on_delivery' && order.status === 'placed' && order.payment?.status === 'pending')) && (
                         <Button 
                           onClick={() => handlePayNow(order._id)} 
                           disabled={processingPayment}

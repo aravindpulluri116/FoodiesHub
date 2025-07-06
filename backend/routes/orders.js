@@ -121,4 +121,61 @@ router.post('/:orderId/cancel', isAuthenticated, async (req, res) => {
   }
 });
 
+// Pay for a COD order
+router.post('/:orderId/pay-cod', isAuthenticated, async (req, res) => {
+  try {
+    console.log('Processing COD payment for order:', req.params.orderId);
+    
+    const order = await Order.findById(req.params.orderId);
+    
+    if (!order) {
+      console.log('Order not found:', req.params.orderId);
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check if the order belongs to the user
+    if (order.user.toString() !== req.user._id.toString()) {
+      console.log('Unauthorized access attempt for order:', req.params.orderId);
+      return res.status(403).json({ message: 'Not authorized to pay for this order' });
+    }
+
+    // Check if it's a COD order
+    if (order.payment.method !== 'cash_on_delivery') {
+      console.log('Order is not a COD order:', order.payment.method);
+      return res.status(400).json({ message: 'This order is not a Cash on Delivery order' });
+    }
+
+    // Check if payment is still pending
+    if (order.payment.status !== 'pending') {
+      console.log('Payment already processed:', order.payment.status);
+      return res.status(400).json({ message: 'Payment has already been processed for this order' });
+    }
+
+    // Update payment status to completed
+    await order.updatePaymentStatus('completed', order._id.toString(), {
+      payment_method: 'online',
+      original_method: 'cash_on_delivery',
+      paid_at: new Date()
+    });
+
+    // Optionally update payment method to online
+    order.payment.method = 'online';
+    await order.save();
+
+    console.log('COD payment completed successfully for order:', req.params.orderId);
+
+    res.json({ 
+      success: true,
+      message: 'Payment completed successfully',
+      order: order
+    });
+  } catch (error) {
+    console.error('Error processing COD payment:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Failed to process payment'
+    });
+  }
+});
+
 module.exports = router; 
