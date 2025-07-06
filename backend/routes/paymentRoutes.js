@@ -11,8 +11,11 @@ router.post('/retry-payment', isAuthenticated, retryPayment);
 // Route to create payment session for COD orders
 router.post('/create-cod-payment', isAuthenticated, createCodPayment);
 
-// Route to verify payment (requires authentication)
+// Route to verify payment (requires authentication) - GET for original online orders
 router.get('/verify/:orderId', isAuthenticated, verifyPayment);
+
+// Route to verify payment (requires authentication) - POST for COD orders with Cashfree details
+router.post('/verify/:orderId', isAuthenticated, verifyPayment);
 
 // Route to get payment failure details (requires authentication)
 router.get('/payment-details/:orderId', isAuthenticated, async (req, res) => {

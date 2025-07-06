@@ -289,6 +289,18 @@ const MyOrders = () => {
                        order.payment?.method === 'cash_on_delivery' ? 'Cash on Delivery' : 'Pending'}
                     </span>
                   </div>
+                  
+                  {/* Show admin approval message for pending orders */}
+                  {order.status === 'pending' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Order Status:</strong> Your order is pending admin approval. 
+                        {order.payment?.status === 'completed' 
+                          ? ' Payment received, waiting for admin to process your order.' 
+                          : ' Please complete payment to proceed.'}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-orange-700">
                       Total: ₹{order.totalAmount.toFixed(2)}

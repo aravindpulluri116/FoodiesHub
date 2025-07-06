@@ -27,11 +27,26 @@ const PaymentResult = () => {
     const verifyPayment = async () => {
       try {
         const orderId = searchParams.get('order_id');
+        const cfOrderId = searchParams.get('cf_order_id');
+        const cfPaymentId = searchParams.get('cf_payment_id');
+        
         if (!orderId) {
           throw new Error('Order ID not found');
         }
 
-        const response = await api.get<PaymentVerificationResponse>(`/payments/verify/${orderId}`);
+        let response;
+        
+        // If Cashfree payment details are present, use POST for COD orders
+        if (cfOrderId && cfPaymentId) {
+          response = await api.post<PaymentVerificationResponse>(`/payments/verify/${orderId}`, {
+            cf_order_id: cfOrderId,
+            cf_payment_id: cfPaymentId
+          });
+        } else {
+          // For original online orders, use GET
+          response = await api.get<PaymentVerificationResponse>(`/payments/verify/${orderId}`);
+        }
+        
         if (response.data.success) {
           setSuccess(true);
         } else {

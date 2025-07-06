@@ -31,12 +31,19 @@ interface Order {
   status: string;
   createdAt: string;
   address: string;
+  payment?: {
+    method: 'cash_on_delivery' | 'online';
+    status: 'completed' | 'pending' | 'failed';
+  };
 }
 
 const AdminPanel = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [paymentFilter, setPaymentFilter] = useState<string>('all');
 
   useEffect(() => {
     checkAuth();
@@ -58,6 +65,7 @@ const AdminPanel = () => {
     try {
       const response = await api.get('/admin/orders');
       setOrders(response.data);
+      setFilteredOrders(response.data);
       setLoading(false);
     } catch (error: any) {
       console.error('Error fetching orders:', error);
@@ -67,6 +75,21 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
+
+  // Filter orders based on status and payment filters
+  useEffect(() => {
+    let filtered = orders;
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    if (paymentFilter !== 'all') {
+      filtered = filtered.filter(order => order.payment?.status === paymentFilter);
+    }
+
+    setFilteredOrders(filtered);
+  }, [orders, statusFilter, paymentFilter]);
 
   const handlePlaceOrder = async (orderId: string) => {
     try {
@@ -119,8 +142,45 @@ const AdminPanel = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Admin Panel - Orders</h1>
+      
+      {/* Filters */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium">Order Status:</label>
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="placed">Placed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium">Payment Status:</label>
+          <select 
+            value={paymentFilter} 
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+          >
+            <option value="all">All Payments</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Paid</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+        
+        <div className="text-sm text-gray-600">
+          Showing {filteredOrders.length} of {orders.length} orders
+        </div>
+      </div>
+      
       <div className="grid gap-4">
-        {orders.map((order) => (
+        {filteredOrders.map((order) => (
           <Card key={order._id} className="p-4 max-w-3xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -132,7 +192,8 @@ const AdminPanel = () => {
                   Date: {new Date(order.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex justify-end items-center">
+              <div className="flex flex-col items-end space-y-2">
+                {/* Order Status */}
                 <span className={`px-4 py-2 rounded-full text-base font-medium ${
                   order.status === 'completed' ? 'bg-green-100 text-green-800' :
                   order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
@@ -140,6 +201,22 @@ const AdminPanel = () => {
                   'bg-yellow-100 text-yellow-800'
                 }`}>
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
+                
+                {/* Payment Status */}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {order.payment?.status === 'completed' ? '🟢 Paid' :
+                   order.payment?.status === 'failed' ? '🔴 Failed' :
+                   '🟡 Pending'}
+                </span>
+                
+                {/* Payment Method */}
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                  {order.payment?.method === 'cash_on_delivery' ? '💵 COD' : '💳 Online'}
                 </span>
               </div>
             </div>
@@ -153,23 +230,28 @@ const AdminPanel = () => {
                 ))}
               </ul>
             </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              {order.status === 'pending' && (
-                <Button
-                  onClick={() => handlePlaceOrder(order._id)}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Place Order
-                </Button>
-              )}
-              {(order.status === 'pending' || order.status === 'placed') && (
-                <Button
-                  onClick={() => handleCancelOrder(order._id)}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Cancel Order
-                </Button>
-              )}
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-lg font-semibold text-orange-700">
+                Total: ₹{order.totalAmount.toFixed(2)}
+              </div>
+              <div className="flex space-x-2">
+                {order.status === 'pending' && (
+                  <Button
+                    onClick={() => handlePlaceOrder(order._id)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Mark as Placed
+                  </Button>
+                )}
+                {(order.status === 'pending' || order.status === 'placed') && (
+                  <Button
+                    onClick={() => handleCancelOrder(order._id)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Cancel Order
+                  </Button>
+                )}
+              </div>
             </div>
           </Card>
         ))}

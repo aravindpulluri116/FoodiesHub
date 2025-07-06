@@ -62,7 +62,7 @@ router.post('/', isAuthenticated, async (req, res) => {
       items: orderItems,
       totalAmount,
       address,
-      status: 'placed', // Set status to 'placed' for COD orders
+      status: 'pending', // Set status to 'pending' for admin approval
       payment: {
         method: 'cash_on_delivery',
         status: 'pending'

@@ -153,11 +153,7 @@ const verifyPayment = async (req, res) => {
             });
         }
 
-        // Fetch order status from Cashfree
-        const response = await cashfree.PGFetchOrder(orderId);
-        console.log('Payment verification response:', response);
-
-        // Find the order
+        // Find the order first
         const order = await Order.findById(orderId);
         if (!order) {
             console.error('[DEBUG] Order not found in DB during verification:', orderId);
@@ -166,6 +162,80 @@ const verifyPayment = async (req, res) => {
                 message: "Order not found"
             });
         }
+
+        // Check if this is a COD order that was converted to online payment
+        if (order.payment.method === 'cash_on_delivery' || 
+            (order.payment.paymentDetails && order.payment.paymentDetails.get('original_method') === 'cash_on_delivery')) {
+            
+            // For COD orders converted to online, check if Cashfree payment details exist
+            const { cf_order_id, cf_payment_id } = req.body;
+            
+            if (!cf_order_id || !cf_payment_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Missing Cashfree payment details for COD to online conversion"
+                });
+            }
+
+            // Verify with Cashfree using the provided order ID
+            const response = await cashfree.PGFetchOrder(cf_order_id);
+            console.log('COD payment verification response:', response);
+
+            if (response.data.order_status === "PAID") {
+                // Update payment status
+                await order.updatePaymentStatus('completed', cf_order_id, {
+                    payment_session_id: response.data.payment_session_id,
+                    order_id: cf_order_id,
+                    payment_details: response.data,
+                    cf_payment_id: cf_payment_id,
+                    original_method: 'cash_on_delivery'
+                });
+
+                // Keep order status as pending for admin approval
+                // Order status will be updated by admin manually
+
+                // Clear the user's cart
+                const user = await User.findById(order.user);
+                if (user) {
+                    user.cart = [];
+                    await user.save();
+                    console.log('Cleared cart for user during COD verification:', user._id);
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: "COD payment completed successfully",
+                    data: response.data
+                });
+            } else if (response.data.order_status === "FAILED") {
+                // Update payment status to failed
+                await order.updatePaymentStatus('failed', cf_order_id, {
+                    payment_session_id: response.data.payment_session_id,
+                    order_id: cf_order_id,
+                    payment_details: response.data,
+                    cf_payment_id: cf_payment_id,
+                    failure_reason: response.data.payment_details?.failure_reason || 'Payment failed',
+                    failure_code: response.data.payment_details?.failure_code || 'UNKNOWN',
+                    original_method: 'cash_on_delivery'
+                });
+                
+                console.log('COD payment failed for order:', orderId, {
+                    failure_reason: response.data.payment_details?.failure_reason,
+                    failure_code: response.data.payment_details?.failure_code,
+                    payment_details: response.data
+                });
+
+                return res.status(200).json({
+                    success: false,
+                    message: "COD payment failed",
+                    data: response.data
+                });
+            }
+        }
+
+        // For original online orders, continue with normal Cashfree verification
+        const response = await cashfree.PGFetchOrder(orderId);
+        console.log('Payment verification response:', response);
 
         // If payment is successful, update order and clear cart
         if (response.data.order_status === "PAID") {
@@ -176,8 +246,8 @@ const verifyPayment = async (req, res) => {
                 payment_details: response.data
             });
 
-            // Update order status
-            await order.updateStatus('placed');
+            // Keep order status as pending for admin approval
+            // Order status will be updated by admin manually
 
             // Clear the user's cart
             const user = await User.findById(order.user);
@@ -256,9 +326,9 @@ const handleWebhook = async (req, res) => {
                 payment_details: req.body
             });
 
-            // Update order status
-            await order.updateStatus('placed');
-            console.log('Updated order status to placed:', order_id);
+            // Keep order status as pending for admin approval
+            // Order status will be updated by admin manually
+            console.log('Payment completed, order status remains pending for admin approval:', order_id);
 
             // Clear the user's cart
             const user = await User.findById(order.user);
@@ -411,7 +481,7 @@ const createCodPayment = async (req, res) => {
                 customer_phone: user.phone || "9999999999"
             },
             order_meta: {
-                return_url: `${process.env.FRONTEND_URL}/payment/result?order_id=${order._id}`
+                return_url: `${process.env.FRONTEND_URL}/payment/result?order_id=${order._id}&cf_order_id={order_id}&cf_payment_id={payment_id}`
             }
         };
 
