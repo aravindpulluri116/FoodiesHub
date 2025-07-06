@@ -193,6 +193,14 @@ const verifyPayment = async (req, res) => {
             await order.updatePaymentStatus('failed', orderId, {
                 payment_session_id: response.data.payment_session_id,
                 order_id: orderId,
+                payment_details: response.data,
+                failure_reason: response.data.payment_details?.failure_reason || 'Payment failed',
+                failure_code: response.data.payment_details?.failure_code || 'UNKNOWN'
+            });
+            
+            console.log('Payment failed for order:', orderId, {
+                failure_reason: response.data.payment_details?.failure_reason,
+                failure_code: response.data.payment_details?.failure_code,
                 payment_details: response.data
             });
         }
@@ -266,6 +274,14 @@ const handleWebhook = async (req, res) => {
             await order.updatePaymentStatus('failed', order_id, {
                 payment_session_id: req.body.payment_session_id,
                 order_id: order_id,
+                payment_details: req.body,
+                failure_reason: req.body.payment_details?.failure_reason || 'Payment failed',
+                failure_code: req.body.payment_details?.failure_code || 'UNKNOWN'
+            });
+            
+            console.log('Payment failed via webhook for order:', order_id, {
+                failure_reason: req.body.payment_details?.failure_reason,
+                failure_code: req.body.payment_details?.failure_code,
                 payment_details: req.body
             });
         }
@@ -296,6 +312,11 @@ const retryPayment = async (req, res) => {
 
         if (order.status === 'completed' || order.status === 'cancelled') {
             return res.status(400).json({ success: false, message: `Cannot pay for a ${order.status} order.` });
+        }
+
+        // Allow retry for failed payments
+        if (order.payment.status === 'failed') {
+            console.log('Retrying payment for failed order:', orderId);
         }
 
         const user = order.user;
@@ -343,10 +364,90 @@ const retryPayment = async (req, res) => {
     }
 };
 
+const createCodPayment = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        if (!orderId) {
+            return res.status(400).json({ success: false, message: "Order ID is required" });
+        }
+
+        // Find the existing COD order
+        const order = await Order.findById(orderId).populate('user').populate('items.product');
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Check if it's a COD order
+        if (order.payment.method !== 'cash_on_delivery') {
+            return res.status(400).json({ success: false, message: "This order is not a Cash on Delivery order" });
+        }
+
+        // Check if payment is still pending or failed (allow retry for failed payments)
+        if (order.payment.status !== 'pending' && order.payment.status !== 'failed') {
+            return res.status(400).json({ success: false, message: "Payment has already been processed for this order" });
+        }
+
+        // Log if retrying a failed payment
+        if (order.payment.status === 'failed') {
+            console.log('Retrying payment for failed COD order:', orderId);
+        }
+
+        const user = order.user;
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User for this order not found" });
+        }
+
+        // Create a new payment session for the COD order
+        const orderRequest = {
+            order_id: `${order._id.toString()}_cod_${Date.now()}`,
+            order_amount: order.totalAmount,
+            order_currency: "INR",
+            customer_details: {
+                customer_id: user._id.toString(),
+                customer_name: user.name,
+                customer_email: user.email,
+                customer_phone: user.phone || "9999999999"
+            },
+            order_meta: {
+                return_url: `${process.env.FRONTEND_URL}/payment/result?order_id=${order._id}`
+            }
+        };
+
+        const response = await cashfree.PGCreateOrder(orderRequest);
+        
+        // Update the order to change payment method to online and set pending status
+        order.payment.method = 'online';
+        await order.updatePaymentStatus('pending', order._id.toString(), {
+            payment_session_id: response.data.payment_session_id,
+            order_id: response.data.order_id,
+            original_method: 'cash_on_delivery'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Payment session created successfully for COD order",
+            data: response.data
+        });
+
+    } catch (error) {
+        console.error('Create COD payment error:', error);
+        if (error.response) {
+            console.error('Cashfree API Error:', error.response.data);
+        }
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || error.message || "Error creating payment session for COD order"
+        });
+    }
+};
+
 module.exports = {
     isAuthenticated,
     createOrder,
     verifyPayment,
     handleWebhook,
-    retryPayment
+    retryPayment,
+    createCodPayment
 }; 

@@ -52,4 +52,15 @@ router.get('/verify/:orderId', isAuthenticated, async (req, res, next) => {
   }
 });
 
+// Create payment session for COD orders
+router.post('/create-cod-payment', isAuthenticated, async (req, res, next) => {
+  console.log('Create COD payment route accessed');
+  try {
+    await PaymentController.createCodPayment(req, res);
+  } catch (error) {
+    console.error('Error in create-cod-payment route:', error);
+    next(error);
+  }
+});
+
 module.exports = router; 

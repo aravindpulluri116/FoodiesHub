@@ -145,17 +145,28 @@ const MyOrders = () => {
       }
 
       if (order.payment?.method === 'cash_on_delivery') {
-        // Handle COD order payment
-        const response = await api.post(`/orders/${orderId}/pay-cod`);
-        
-        if (response.data.success) {
+        // Handle COD order payment - create payment session for online payment
+        if (!cashfree) {
           toast({
-            title: "Payment Successful",
-            description: "Your COD order has been paid successfully.",
+            title: "Payment gateway not ready",
+            description: "The payment gateway is still loading. Please try again in a moment.",
+            variant: "destructive",
           });
-          fetchOrders(); // Refresh the orders list
+          return;
+        }
+
+        const response = await api.post('/payments/create-cod-payment', { 
+          orderId
+        });
+
+        if (response.data.success) {
+          const { payment_session_id } = response.data.data;
+          cashfree.checkout({
+            paymentSessionId: payment_session_id,
+            redirectTarget: "_self"
+          });
         } else {
-          throw new Error(response.data.message || 'Failed to process payment.');
+          throw new Error(response.data.message || 'Failed to create payment session.');
         }
       } else {
         // Handle online payment (existing logic)
@@ -269,10 +280,13 @@ const MyOrders = () => {
                     <span className="font-semibold text-gray-700">Payment:</span>
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow ${
                       order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      order.payment?.status === 'failed' ? 'bg-red-100 text-red-800' :
                       order.payment?.method === 'cash_on_delivery' ? 'bg-gray-200 text-gray-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {order.payment?.status === 'completed' ? 'Paid' : order.payment?.method === 'cash_on_delivery' ? 'Cash on Delivery' : 'Pending'}
+                      {order.payment?.status === 'completed' ? 'Paid' : 
+                       order.payment?.status === 'failed' ? 'Payment Failed' :
+                       order.payment?.method === 'cash_on_delivery' ? 'Cash on Delivery' : 'Pending'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -289,6 +303,17 @@ const MyOrders = () => {
                           className="bg-orange-600 hover:bg-orange-700"
                         >
                           {processingPayment ? 'Processing...' : 'Pay Now'}
+                        </Button>
+                      )}
+
+                      {/* Show "Retry Payment" for failed payments */}
+                      {order.payment?.status === 'failed' && (
+                        <Button 
+                          onClick={() => handlePayNow(order._id)} 
+                          disabled={processingPayment}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          {processingPayment ? 'Processing...' : 'Retry Payment'}
                         </Button>
                       )}
 
