@@ -1,0 +1,36 @@
+services:
+  # Backend service
+  - type: web
+    name: pickles-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false
+      - key: CASHFREE_API_ENDPOINT
+        value: https://sandbox.cashfree.com/pg
+
+  # Frontend service
+  - type: web
+    name: pickles-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://pickles-backend.onrender.com
+      - key: VITE_CASHFREE_SDK_URL
+        value: https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js 
